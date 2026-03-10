@@ -1,7 +1,6 @@
 # Keep learning
 
 # 1.变量
-
     // 常量（不可变）
     val constant: String = "Hello"
     
@@ -14,7 +13,6 @@
     }
 
 # 2. 逻辑控制
-
     // if
     if (age > 18) {
         println("Adult")
@@ -51,7 +49,6 @@
     }
 
 # 3. 函数
-
 ## 一，普通函数
 
         基础语法：fun [函数名]([参数列表]): [返回类型] = [表达式] 或 { [代码块] }
@@ -160,7 +157,6 @@
         //    - 仅在导入扩展函数的文件中可用
 
 # 4. 面向对象编程
-
 ## 一，类与构造函数：
 
 ### 1. 主构造函数（类声明中定义）
@@ -281,7 +277,6 @@
            class WiFi : Network // 自动继承connect()
 
 # 5. Lambda编程
-
 ## 一，基础Lambda
 
 val sum = { a: Int, b: Int -> a + b }
@@ -305,7 +300,6 @@ fun execute(block: () -> Unit) { block() }
 execute { println("Hello") }
 
 # 6. 空指针检查
-
 ## 一，安全调用（?.）：避免空指针
 
 val length = user?.name?.length // null if any is null
@@ -323,7 +317,6 @@ val nonNullName = user!!.name
 val str: String? = obj as? String
 
 # 7. 泛型
-
 ## 一，基础泛型
 
 class Box<T>(val value: T)
@@ -346,7 +339,6 @@ mutableList.add("a") // ✅
 fun <T : Comparable<T>> max(a: T, b: T) = if (a > b) a else b
 
 # 8. 委托
-
 ## 一，委托属性（by）
 
 class User {
@@ -369,7 +361,6 @@ class Delegate<T>(var value: T) {
 var custom: String by Delegate("Custom")
 
 # 9. 协程
-
 ## 一，启动协程（默认在Dispatchers.Main）
 
 GlobalScope.launch {
@@ -393,7 +384,6 @@ fun main() = runBlocking {
 }
 
 # 10. 其它补充
-
 ## 一，标准库高阶函数
 
 val numbers = listOf(1, 2, 3)
