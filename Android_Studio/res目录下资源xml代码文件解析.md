@@ -92,6 +92,16 @@
 
     android:id="@+id/remove_item": 同样，为这个菜单项创建一个唯一的 ID，名称为 remove_item。
     android:title="Remove": 设置了这个菜单项的显示文本为 "Remove"。
-    
 
-# 三，
+# 三， 显示文字TextView
+    ————————————————————————————————————————————————
+    <TextView 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="This is a normal activity" 
+     />
+    ————————————————————————————————————————————————
+
+# 四，
+
+//修改一下级别吧，以后需要添加的内容有一点多

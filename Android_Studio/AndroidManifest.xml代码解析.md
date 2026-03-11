@@ -63,4 +63,65 @@
     MAIN：告诉系统“这是应用的起点”。
     LAUNCHER：告诉系统“这个入口要显示在桌面”。
 
-# 二，
+# 二，注册可以响应隐式Intent的activity信息
+    ——————————————————————————————————————————————————————————————————————————
+    <activity android:name=".SecondActivity" > 
+     <intent-filter> 
+     <action android:name="com.example.activitytest.ACTION_START" /> 
+     <category android:name="android.intent.category.DEFAULT" /> 
+     </intent-filter> 
+    </activity>
+    ——————————————————————————————————————————————————————————————————————————
+
+## 解释
+    在<action>标签中我们指明了当前Activity可以响应
+    com.example.activitytest.ACTION_START这个action，而<category>标签则包含了
+    一些附加信息，更精确地指明了当前Activity能够响应的Intent中还可能带有的category。只
+    有<action>和<category>中的内容同时匹配Intent中指定的action和category时，这个
+    Activity才能响应该Intent。
+
+# 三，注册新增加的category
+    ————————————————————————————————————————————————————————
+    <activity android:name=".SecondActivity" > 
+     <intent-filter> 
+     <action android:name="com.example.activitytest.ACTION_START" /> 
+     <category android:name="android.intent.category.DEFAULT" /> 
+     <category android:name="com.example.activitytest.MY_CATEGORY"/> 
+     </intent-filter> 
+    </activity>
+    ————————————————————————————————————————————————————————
+    错误信息提醒我们，没有任何一个Activity可以响应我们的Intent。这是因为我们刚刚在Intent
+    中新增了一个category，而SecondActivity的<intent-filter>标签中并没有声明可以响
+    应这个category，所以就出现了没有任何Activity可以响应该Intent的情况。现在我们在
+    <intent-filter>中再添加一个category的声明。
+
+# 四，配置一个<data>标签，用于更精确地指定当前Activity能够响应的数据。
+    ————————————————————————————————————————————————————————
+    <activity android:name=".ThirdActivity"> 
+     <intent-filter tools:ignore="AppLinkUrlError"> 
+     <action android:name="android.intent.action.VIEW" /> 
+     <category android:name="android.intent.category.DEFAULT" /> 
+     <data android:scheme="https" /> 
+     </intent-filter> 
+    </activity>
+    ————————————————————————————————————————————————————————
+    我们在ThirdActivity的<intent-filter>中配置了当前Activity能够响应的action是
+    Intent.ACTION_VIEW的常量值，而category则毫无疑问地指定了默认的category值，另
+    外在<data>标签中，我们通过android:scheme指定了数据的协议必须是https协议，这样
+    ThirdActivity应该就和浏览器一样，能够响应一个打开网页的Intent了。另外，由于Android
+    Studio认为所有能够响应ACTION_VIEW的Activity都应该加上BROWSABLE的category，否
+    则就会给出一段警告提醒。加上BROWSABLE的category是为了实现deep link功能，和我们
+    目前学习的东西无关，所以这里直接在<intent-filter>标签上使用tools:ignore属性将
+    警告忽略即可。
+
+# 五，注册对话框式主题
+    ————————————————————————————————————————————————
+    <activity android:name=".DialogActivity" 
+     android:theme="@style/Theme.AppCompat.Dialog"> 
+    </activity> 
+    <activity android:name=".NormalActivity"> 
+    </activity>
+    ————————————————————————————————————————————————
+
+# 六，
+
