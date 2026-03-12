@@ -11,4 +11,12 @@
     学习编程实现显示Intent,隐式Intent实现Activity切换
     学习了Activity的完整生命周期，并体验了完整的生命周期
     学习并实践了四种Activity的启动模式
-    
+
+# 2026.3.12
+    学会了Activity的四种启动模式
+    初步学习额六种常见的控件使用方法和三种基本布局
+    学会了使用实现接口的方式来进行注册Button
+    通过点击按钮获取EditText中输入的内容。
+    动态地更改ImageView中的图片
+    ProgressBar的可视调整
+    AlertDialog确认对话框

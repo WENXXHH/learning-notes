@@ -123,5 +123,27 @@
     </activity>
     ————————————————————————————————————————————————
 
-# 六，
+# 六，注册Activity的启动模式
 
+    —————————————————————————————————————————————————————————————————————————
+    <activity 
+     android:name=".FirstActivity" 
+     android:launchMode="singleTop"   //(or  android:launchMode="singleTask" )
+     android:label="This is FirstActivity"> 
+     <intent-filter> 
+     <action android:name="android.intent.action.MAIN"/> 
+     <category android:name="android.intent.category.LAUNCHER"/> 
+     </intent-filter> 
+    </activity>
+    ——————————————————————————————————————————————————————————————————————————
+    <activity android:name=".SecondActivity" 
+     android:launchMode="singleInstance"> 
+     <intent-filter> 
+     <action android:name="com.example.activitytest.ACTION_START" /> 
+     <category android:name="android.intent.category.DEFAULT" /> 
+     <category android:name="com.example.activitytest.MY_CATEGORY" /> 
+     </intent-filter> 
+    </activity> 
+    ——————————————————————————————————————————————————————————————————————————
+
+# 七，
