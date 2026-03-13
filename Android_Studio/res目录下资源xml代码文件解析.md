@@ -208,6 +208,101 @@
     FrameLayout又称作帧布局，它相比于前面两种布局就简单太多了，因此它的应用场景少了很
     多。这种布局没有丰富的定位方式，所有的控件都会默认摆放在布局的左上角。
 
+## 九，自定义标题栏布局并引入
 
+### 先创建一个title.xml布局，填写以下代码
 
-## 九，
+    ————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:background="@drawable/title_bg"> 
+     
+     <Button
+     android:id="@+id/titleBack" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center" 
+     android:layout_margin="5dp" 
+     android:background="@drawable/back_bg" 
+     android:text="Back" 
+     android:textColor="#fff" /> 
+     
+     <TextView 
+     android:id="@+id/titleText" 
+     android:layout_width="0dp" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center" 
+     android:layout_weight="1" 
+     android:gravity="center" 
+     android:text="Title Text" 
+     android:textColor="#fff" 
+     android:textSize="24sp" /> 
+     
+     <Button 
+     android:id="@+id/titleEdit" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center" 
+     android:layout_margin="5dp" 
+     android:background="@drawable/edit_bg" 
+     android:text="Edit" 
+     android:textColor="#fff" /> 
+     
+    </LinearLayout> 
+
+    ————————————————————————————————————————————————————————————
+    android:background用于为布局或控件指定一个背景，可以使用颜色或图片来进行填充。这
+    里我提前准备好了3张图片——title_bg.png、back_bg.png和edit_bg.png（资源下载地址见
+    前言），分别用于作为标题栏、返回按钮和编辑按钮的背景。另外，在两个Button中我们都使
+    用了android:layout_margin这个属性，它可以指定控件在上下左右方向上的间距。当然也
+    可以使用android:layout_marginLeft或android:layout_marginTop等属性来单独指
+    定控件在某个方向上的间距。
+
+### 再activity_main.xml中的代码
+
+    ————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <include layout="@layout/title" /> 
+     
+    </LinearLayout> 
+    ——————————————————————————————————————————————————————————————————————————
+    我们只需要通过一行include语句引入标题栏布局就可以了。
+    别忘了在MainActivity中将系统自带的标题栏隐藏掉
+
+## 十，添加自定义控件
+    修改activity_main.xml中的代码
+    ——————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <com.example.uicustomviews.TitleLayout 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" /> 
+     
+    </LinearLayout> 
+    ——————————————————————————————————————————————————————————————————————
+    添加自定义控件和添加普通控件的方式基本是一样的，只不过在添加自定义控件的时候，我们
+    需要指明控件的完整类名，包名在这里是不可以省略的。
+
+## 十一，ListView的简单用法
+### 创建一个新项目，先修改 activity_main.xml中的代码
+    ————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <ListView 
+     android:id="@+id/listView" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" /> 
+     
+    </LinearLayout>
+    ——————————————————————————————————————————————————————————————————————————
+
+    接下来修改MainActivity中的代码
+

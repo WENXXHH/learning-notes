@@ -723,6 +723,98 @@
     来调用setPositiveButton()方法为对话框设置确定按钮的点击事件，调用 setNegativeButton()方法
     设置取消按钮的点击事件，最后调用show()方法将对话框显示 出来就可以了。
 
+## 六，在MainActivity中将系统自带的标题栏隐藏掉
+    ——————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     supportActionBar?.hide() 
+     } 
+     
+    }
+    ——————————————————————————————————————————————————————————
+    这里我们调用了getSupportActionBar()方法来获得ActionBar的实例，然后再调用它的
+    hide()方法将标题栏隐藏起来。由于ActionBar有可能为空，所以这里还使用了?.操作符。
 
+## 七，创建自定义控件
 
-## 六，
+### 创建自定义控件类 TitleLayout.kt
+    ——————————————————————————————————————————————————————————————————————————————————————————
+    class TitleLayout(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) { 
+     
+     init { 
+     LayoutInflater.from(context).inflate(R.layout.title, this) 
+     } 
+     
+    }
+    ————————————————————————————————————————————————————————————————————————————————————————————
+    这里我们在TitleLayout的主构造函数中声明了Context和AttributeSet这两个参数，在布局中
+    引入TitleLayout控件时就会调用这个构造函数。然后在init结构体中需要对标题栏布局进行动
+    态加载，这就要借助LayoutInﬂater来实现了。通过LayoutInﬂater的from()方法可以构建出
+    一个LayoutInflater对象，然后调用inflate()方法就可以动态加载一个布局文件。
+    inflate()方法接收两个参数：第一个参数是要加载的布局文件的id，这里我们传入
+    R.layout.title；第二个参数是给加载好的布局再添加一个父布局，这里我们想要指定为
+    TitleLayout，于是直接传入this。
+    接下来我们需要在布局文件中添加这个自定义控件
+
+    重新运行程序，你会发现此时的效果和使用引入布局方式的效果是一样的。
+    下面我们尝试为标题栏中的按钮注册点击事件，修改TitleLayout中的代码
+    ——————————————————————————————————————————————————————————————————————————————————————————————
+    class TitleLayout(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) { 
+     
+     init { 
+     LayoutInflater.from(context).inflate(R.layout.title, this) 
+     titleBack.setOnClickListener { 
+     val activity = context as Activity 
+     activity.finish() 
+     } 
+     titleEdit.setOnClickListener { 
+     Toast.makeText(context, "You clicked Edit button", Toast.LENGTH_SHORT).show() 
+     } 
+     } 
+     
+    }
+    ——————————————————————————————————————————————————————————————————————————————————————————————
+    注意，TitleLayout中接收的context参数实际上是一个Activity的实例，在返回按钮的点击事
+    件里，我们要先将它转换成Activity类型，然后再调用finish()方法销毁当前的Activity。
+    Kotlin中的类型强制转换使用的关键字是as，由于是第一次用到，所以这里单独讲解一下。
+
+    
+
+## 八，ListView的简单用法
+    首先修改activity_main.xml中的代码
+    接下来修改MainActivity中的代码
+    ———————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     private val data = listOf("Apple", "Banana", "Orange", "Watermelon", 
+     "Pear", "Grape", "Pineapple", "Strawberry", "Cherry", "Mango", 
+     "Apple", "Banana", "Orange", "Watermelon", "Pear", "Grape", 
+     "Pineapple", "Strawberry", "Cherry", "Mango") 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val adapter = ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,data) 
+     listView.adapter = adapter 
+     } 
+     
+    } 
+    ———————————————————————————————————————————————————————————————
+    既然ListView是用于展示大量数据的，那我们就应该先将数据提供好。这些数据可以从网上下
+    载，也可以从数据库中读取，应该视具体的应用程序场景而定。这里我们就简单使用一个data
+    集合来进行测试，里面包含了很多水果的名称，初始化集合的方式使用的是之前在第2章学过的
+    listOf()函数。
+    不过，集合中的数据是无法直接传递给ListView的，我们还需要借助适配器来完成。Android
+    中提供了很多适配器的实现类，其中我认为最好用的就是ArrayAdapter。它可以通过泛型来指
+    定要适配的数据类型，然后在构造函数中把要适配的数据传入。ArrayAdapter有多个构造函数
+    的重载，你应该根据实际情况选择最合适的一种。由于我们这里提供的数据都是字符串，因此
+    将ArrayAdapter的泛型指定为String，然后在ArrayAdapter的构造函数中依次传入Activity
+    的实例、ListView子项布局的id，以及数据源。注意，我们使用了
+    android.R.layout.simple_list_item_1作为ListView子项布局的id，这是一个
+    Android内置的布局文件，里面只有一个TextView，可用于简单地显示一段文本。这样适配器
+    对象就构建好了。
+    最后，还需要调用ListView的setAdapter()方法，将构建好的适配器对象传递进去，这样
+    ListView和数据之间的关联就建立完成了。
