@@ -1,5 +1,5 @@
-# 《一》 初识Activity
-## 一，加载编辑好的布局
+# 《一》 初识Activity  ✔
+## 一，加载编辑好的布局 ✔ 
     ——————————————————————————————————————————————————————————————
     class FirstActivity : AppCompatActivity() { 
      
@@ -10,13 +10,15 @@
      
     }
     ——————————————————————————————————————————————————————————————
-    FirstActivity 是一个标准的 Android 界面 Activity，通过 onCreate() 加载 first_layout.xml 布局，是 Android 开发中最基础的界面实现方式。
+    FirstActivity 是一个标准的 Android 界面 Activity，通过 onCreate() 加载 first_layout.xml 布局，
+    是 Android 开发中最基础的界面实现方式。
 
 ### 1. 类定义与继承
 
     FirstActivity 是一个 Activity 类（Android 应用的界面组件）。
     : AppCompatActivity 表示继承自 AppCompatActivity（AndroidX 库中的类）。
-    它是 Activity 的扩展，提供向后兼容性（支持 Android 5.0+ 的 Material Design 以及 ActionBar 等功能），是现代 Android 开发的推荐写法。
+    它是 Activity 的扩展，提供向后兼容性（支持 Android 5.0+ 的 Material Design 以及 ActionBar 等功能），
+    是现代 Android 开发的推荐写法。
 
 ### 2. onCreate() 方法
 
@@ -36,7 +38,7 @@
     onCreate() 是入口，系统通过 onCreate() 创建 Activity 并加载界面。
     setContentView() 是关键，没有这行代码，Activity 会没有界面（显示为空白）。
 
-## 二，在Activity中使用Toast
+## 二，在Activity中使用Toast  ✔
     ——————————————————————————————————————————————————————————————————————————
     override fun onCreate(savedInstanceState: Bundle?) { 
      super.onCreate(savedInstanceState) 
@@ -94,7 +96,7 @@
     干什么用：存放和管理 Activity 或 Fragment 所需的数据，并将这些数据提供给 UI。它的生命周期比 Activity/Fragment 更长。
     好处：当设备屏幕旋转导致 Activity 重建时，ViewModel 中的数据不会丢失，从而避免了数据重新加载，提升了用户体验。它是实现 MVVM 架构的关键组件。
 
-## 三，利用menu资源文件，重写onCreateOptionsMenu() 和 onOptionsItemSelected()方法
+## 三，利用menu资源文件，重写onCreateOptionsMenu() 和 onOptionsItemSelected()方法 ✔
 
 ### 1，重写onCreateOptionsMenu()
     —————————————————————————————————————————————————————————
@@ -152,7 +154,7 @@
     告诉系统：“这个按钮我处理完了，不用再执行默认操作”。
     （如果返回 false，点击后菜单可能自动关闭，但不会执行提示！）
 
-## 四，编写显示Intent代码实现Activity穿梭
+## 四，编写显示Intent代码实现Activity穿梭   ✔
     ——————————————————————————————————————————————————————————
     button1.setOnClickListener { 
      val intent = Intent(this, SecondActivity::class.java) 
@@ -160,7 +162,7 @@
     } 
     ——————————————————————————————————————————————————————————
 
-## 五，编写隐式Intent代码并添加category
+## 五，编写隐式Intent代码并添加category ✔
     ——————————————————————————————————————————————————————————
     button1.setOnClickListener { 
      val intent = Intent("com.example.activitytest.ACTION_START") 
@@ -179,7 +181,7 @@
     可以调用Intent中的addCategory()方法来添加一个category，这里我们指定了一个自定义
     的category，值为com.example.activitytest.MY_CATEGORY。
 
-## 六，编写隐式Intent来启动网页
+## 六，编写隐式Intent来启动网页  ✔
     ——————————————————————————————————————————————————————————
     button1.setOnClickListener { 
      val intent = Intent(Intent.ACTION_VIEW) 
@@ -195,7 +197,7 @@
     当然，这里再次使用了前面学习的语法糖，看上去像是给Intent的data属性赋值一样。
     重新运行程序，在FirstActivity界面点击按钮就可以看到打开了系统浏览器
 
-## 七，用Intent传递数据示例
+## 七，用Intent传递数据示例 ✔
 
 ### 1，传入示例
 
@@ -230,7 +232,7 @@
     递的数据。如果传递的是整型数据，则使用getIntExtra()方法；如果传递的是布尔型数据，
     则使用getBooleanExtra()方法，以此类推。、
 
-## 八，返回数据给上一个Activity
+## 八，返回数据给上一个Activity ✔
 
 ### 1，修改FirstActivity中按钮的点击事件
     ——————————————————————————————————————————————————————
@@ -297,18 +299,21 @@
     SecondActivity界面点击Button 2按钮会回到FirstActivity，这时查看Logcat的打印信息
 
 ### 4，重写onBackPressed()方法
+    为了保销毁了Activity也可以实现传递数据
     ————————————————————————————————————————————————————————
-    override fun onBackPressed() { 
-     val intent = Intent() 
-     intent.putExtra("data_return", "Hello FirstActivity") 
-     setResult(RESULT_OK, intent) 
-     finish() 
-    }
+     setContentView(R.layout.second_layout)
+        onBackPressedDispatcher.addCallback(this) {
+            val intent = Intent()
+            intent.putExtra("data_return", "Hello FirstActivity")
+            setResult(RESULT_OK, intent)
+            finish()
+        }
+        val button2: Button = findViewById(R.id.button2)
     ————————————————————————————————————————————————————————
     当用户按下Back键后，就会执行onBackPressed()方法中的代码，我们在这里添加返
     回数据的逻辑就行了。避免了没有数据返回的情况发生
 
-## 九，Activity类中定义了7个回调方法和三种生存期
+## 九，Activity类中定义了7个回调方法和三种生存期  ✔
 
 ### 七个回调方法
 
@@ -364,60 +369,64 @@
     期。在前台生存期内，Activity总是处于运行状态，此时的Activity是可以和用户进行交互
     的，我们平时看到和接触最多的就是这个状态下的Activity。
 
-## 十，体验完整的Activity生命周期
+## 十，体验完整的Activity生命周期  ✔
     ————————————————————————————————————————————————————————
-    class MainActivity : AppCompatActivity() { 
-     
-     private val tag = "MainActivity" 
-     
-     override fun onCreate(savedInstanceState: Bundle?) { 
-     super.onCreate(savedInstanceState) 
-     Log.d(tag, "onCreate") 
-     setContentView(R.layout.activity_main) 
-     startNormalActivity.setOnClickListener { 
-     val intent = Intent(this, NormalActivity::class.java) 
-     startActivity(intent) 
-     } 
-     startDialogActivity.setOnClickListener { 
-     val intent = Intent(this, DialogActivity::class.java) 
-     startActivity(intent) 
-     } 
-     } 
-     
-     override fun onStart() { 
-     super.onStart() 
-     Log.d(tag, "onStart") 
-     } 
-     
-     override fun onResume() { 
-     super.onResume() 
-     Log.d(tag, "onResume") 
-     } 
-     
-     override fun onPause() { 
-     super.onPause() 
-     Log.d(tag, "onPause") 
-     } 
-     
-     override fun onStop() { 
-     super.onStop() 
-     Log.d(tag, "onStop") 
-     } 
-     
-     override fun onDestroy() { 
-     super.onDestroy() 
-     Log.d(tag, "onDestroy") 
-     } 
-     
-     override fun onRestart() { 
-     super.onRestart() 
-     Log.d(tag, "onRestart") 
-     } 
-     
-    }
+    class MainActivity : ComponentActivity() {
+        private val tag = "MainActivity"
+    
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            Log.d(tag, "onCreate")
+            setContentView(R.layout.activity_main)
+            val startNormalActivity: Button = findViewById(R.id.startNormalActivity)
+            val startDialogActivity: Button = findViewById(R.id.startDialogActivity)
+    
+            startNormalActivity.setOnClickListener {
+                val intent = Intent(this, NormalActivity::class.java)
+                startActivity(intent)
+            }
+            startDialogActivity.setOnClickListener {
+                val intent = Intent(this, DialogActivity::class.java)
+                startActivity(intent)
+            }
+        }
+    
+        private fun setOnClickListener(function: () -> Unit) {}
+    
+        override fun onStart() {
+            super.onStart()
+            Log.d(tag, "onStart")
+        }
+    
+        override fun onResume() {
+            super.onResume()
+            Log.d(tag, "onResume")
+        }
+    
+        override fun onPause() {
+            super.onPause()
+            Log.d(tag, "onPause")
+        }
+    
+        override fun onStop() {
+            super.onStop()
+            Log.d(tag, "onStop")
+        }
+    
+        override fun onDestroy() {
+            super.onDestroy()
+            Log.d(tag, "onDestroy")
+        }
+    
+        override fun onRestart() {
+            super.onRestart()
+            Log.d(tag, "onRestart")
+        }
+        }
+
     ————————————————————————————————————————————————————————
 
-## 十一，临时数据保存与恢复
+## 十一，临时数据保存与恢复  ✔
 
 ### 临时数据保存
     ——————————————————————————————————————————————————————
@@ -451,7 +460,7 @@
     null，但是如果在Activity被系统回收之前，你通过onSaveInstanceState()方法保存数
     据，这个参数就会带有之前保存的全部数据，我们只需要再通过相应的取值方法将数据取出即可。
 
-## 十二，编辑Activity的四种启动模式
+## 十二，编辑Activity的四种启动模式   ✔
 
 ### 1，standard
     ——————————————————————————————————————————————————————————
@@ -503,7 +512,6 @@
     FirstActivity界面点击按钮进入SecondActivity，
     然后在SecondActivity界面点击按钮，又会重新进入FirstActivity。
 
-
 ### 3，singleTask
 
     在FirstActivity中添加onRestart()方法
@@ -525,7 +533,6 @@
     当Activity的启动模式指定为singleTask，每次启动该Activity时，
     系统首先会在返回栈中检查是否存在该Activity的实例，如果发现已经存在则直接使用该实例，
     并把在这个Activity之上的所有其他Activity统统出栈，如果没有发现就会创建一个新的 Activity实例。
-
 
 ### 4，singleInstance
 
@@ -781,8 +788,6 @@
     件里，我们要先将它转换成Activity类型，然后再调用finish()方法销毁当前的Activity。
     Kotlin中的类型强制转换使用的关键字是as，由于是第一次用到，所以这里单独讲解一下。
 
-    
-
 ## 八，ListView的简单用法
     首先修改activity_main.xml中的代码
     接下来修改MainActivity中的代码
@@ -818,3 +823,6 @@
     对象就构建好了。
     最后，还需要调用ListView的setAdapter()方法，将构建好的适配器对象传递进去，这样
     ListView和数据之间的关联就建立完成了。
+
+
+//尝试一下半小时编辑一次

@@ -1,5 +1,5 @@
-# 《一》
-## 一，在布局中创造Button代码
+# 《一》  ✔
+## 一，在布局中创造Button代码 ✔ 
     ————————————————————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
      android:orientation="vertical" 
@@ -59,7 +59,7 @@
     关键点：文本内容决定了按钮的大小（高度由 wrap_content 决定）。
     ✅ 总结按钮：一个 宽度占满屏幕、高度自适应文本 的按钮，ID 为 button1，文本为 "Button 1"。
 
-## 二，在menu文件下定义菜单布局
+## 二，在menu文件下定义菜单布局  ✔
     ————————————————————————————————————————————————————————————————————————————
     <menu xmlns:android="http://schemas.android.com/apk/res/android"> 
      <item 
@@ -94,7 +94,7 @@
     android:id="@+id/remove_item": 同样，为这个菜单项创建一个唯一的 ID，名称为 remove_item。
     android:title="Remove": 设置了这个菜单项的显示文本为 "Remove"。
 
-# 《二》UI系统学习
+# 《二》UI系统学习   ✔
 ## 一， TextView
     ————————————————————————————————————————————————
     <TextView 

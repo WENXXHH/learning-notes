@@ -1,4 +1,5 @@
-# 一，注册Activity,声明主activity
+ ✔
+# 一，注册Activity,声明主activity ✔
     ——————————————————————————————————————————————————————————————————————
     <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
      package="com.example.activitytest"> 
@@ -16,6 +17,7 @@
      
     </manifest>
     ——————————————————————————————————————————————————————————————————————
+
     AndroidManifest.xml 是 Android 应用的“说明书”，MAIN + LAUNCHER 配置决定了应用如何从桌面启动，
     而 package 和 android:name 确保系统能正确找到你的代码。
     记住：没有 MAIN + LAUNCHER，应用就是“死的”；没有正确路径，代码就是“找不到的”。
@@ -63,7 +65,7 @@
     MAIN：告诉系统“这是应用的起点”。
     LAUNCHER：告诉系统“这个入口要显示在桌面”。
 
-# 二，注册可以响应隐式Intent的activity信息
+# 二，注册可以响应隐式Intent的activity信息  ✔
     ——————————————————————————————————————————————————————————————————————————
     <activity android:name=".SecondActivity" > 
      <intent-filter> 
@@ -80,7 +82,7 @@
     有<action>和<category>中的内容同时匹配Intent中指定的action和category时，这个
     Activity才能响应该Intent。
 
-# 三，注册新增加的category
+# 三，注册新增加的category ✔
     ————————————————————————————————————————————————————————
     <activity android:name=".SecondActivity" > 
      <intent-filter> 
@@ -95,7 +97,7 @@
     应这个category，所以就出现了没有任何Activity可以响应该Intent的情况。现在我们在
     <intent-filter>中再添加一个category的声明。
 
-# 四，配置一个<data>标签，用于更精确地指定当前Activity能够响应的数据。
+# 四，配置一个<data>标签，用于更精确地指定当前Activity能够响应的数据。  ✔
     ————————————————————————————————————————————————————————
     <activity android:name=".ThirdActivity"> 
      <intent-filter tools:ignore="AppLinkUrlError"> 
@@ -114,7 +116,7 @@
     目前学习的东西无关，所以这里直接在<intent-filter>标签上使用tools:ignore属性将
     警告忽略即可。
 
-# 五，注册对话框式主题
+# 五，注册对话框式主题  ✔
     ————————————————————————————————————————————————
     <activity android:name=".DialogActivity" 
      android:theme="@style/Theme.AppCompat.Dialog"> 
@@ -123,7 +125,7 @@
     </activity>
     ————————————————————————————————————————————————
 
-# 六，注册Activity的启动模式
+# 六，注册Activity的启动模式 （等待项目驱动）
 
     —————————————————————————————————————————————————————————————————————————
     <activity 
