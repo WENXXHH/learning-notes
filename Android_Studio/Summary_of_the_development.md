@@ -4,7 +4,7 @@
 
 ### 1，
 
-    在project的模式下，鼠标右击app/src/main/java/com.example.可以完成新建
+    在project的模式下，鼠标右击app/src/main/java/com.example.可以完成新建......
 
 ### 2，
 
@@ -514,7 +514,6 @@
     出，杀掉进程的代码如下所示：
     android.os.Process.killProcess(android.os.Process.myPid()) 
 
-
 ## 十二，启动Activity的最佳写法
 
 ### 1，
@@ -542,5 +541,482 @@
     ————————————————————————————————————————————————————————
 
 # 《二》UI开发的点点滴滴
-    
-## 一，
+
+## 一，使用实现接口的方式来进行注册button点击事件，并通过点击按钮获取EditText中输入的内容。
+
+### 1，
+    先在一个创建好的布局文件里面添加EditText控件
+    ——————————————————————————————————————————————————————————
+    <EditText 
+     android:id="@+id/editText" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:hint="Type something here" 
+     android:maxLines="2" 
+     />
+    ——————————————————————————————————————————————————————————
+
+### 2，
+    然后修改对应的Activity中的编辑button点击事件的代码
+    ————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity(), View.OnClickListener { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.first_layout)
+        val button1: Button = findViewById(R.id.button1)
+        button1.setOnClickListener(this)
+    }
+     
+     override fun onClick(v: View?) { 
+     when (v?.id) { 
+     R.id.button -> { 
+     val editText: EditText = findViewById(R.id.editText)
+     val inputText = editText.text.toString() 
+     Toast.makeText(this, inputText, Toast.LENGTH_SHORT).show() 
+     } 
+     } 
+     } 
+     
+    } 
+    ————————————————————————————————————————————————————————————
+
+## 二，使用ImageView
+
+### 1,
+    我们在res目录下再新建一个drawable-xxhdpi目录，然后将事先准备好的两张图片img_1.png和img_2.png复制到该目录当中。
+    接下来修改activity_main.xml，添加如下代码：
+    ——————————————————————————————————————————————————————————————
+    <ImageView 
+     android:id="@+id/imageView" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:src="@drawable/img_1" 
+     /> 
+    ——————————————————————————————————————————————————————————————
+
+### 2,
+    如果想要动态地更改ImageView中的图片，就修改Activity的代码
+    ——————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity(), View.OnClickListener { 
+     
+     ... 
+     
+     override fun onClick(v: View?) { 
+     when (v?.id) { 
+     R.id.button -> { 
+     val imageView: ImageView = findViewById(R.id.imageView)
+     imageView.setImageResource(R.drawable.img_2)
+     } 
+     } 
+     } 
+     
+    }
+    ——————————————————————————————————————————————————————————————
+
+## 三，使用ProgressBar
+
+### 1，
+    先在布局中添加你想要的版本，一下是两个版本
+    圆形进度条
+    ————————————————————————————————————————————
+    <ProgressBar 
+     android:id="@+id/progressBar" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     /> 
+    ————————————————————————————————————————————
+
+    水平进度条
+    —————————————————————————————————————————————
+    <ProgressBar 
+     android:id="@+id/progressBar" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     style="?android:attr/progressBarStyleHorizontal" 
+     android:max="100" 
+     />
+    —————————————————————————————————————————————
+
+### 2，
+    如果想要实现点击一下按钮让进度条消失，再点击一下按钮让进度条出现。修改Activity中的代码，如下所示：
+    ——————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity(), View.OnClickListener { 
+     
+     ... 
+     
+     override fun onClick(v: View?) { 
+     when (v?.id) { 
+     R.id.button -> { 
+     if (progressBar.visibility == View.VISIBLE) { 
+     progressBar.visibility = View.GONE 
+     } else { 
+     progressBar.visibility = View.VISIBLE 
+     } 
+     } 
+     } 
+     } 
+     
+    } 
+    ————————————————————————————————————————————————————————————————————
+
+### 3，
+    动态地更改水平进度条的进度，可以修改Activity中的代码如下所示：
+    ————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity(), View.OnClickListener { 
+     
+     ... 
+     
+     override fun onClick(v: View?) { 
+     when (v?.id) { 
+     R.id.button -> { 
+     progressBar.progress = progressBar.progress + 10 
+     } 
+     } 
+     } 
+     
+    }
+    ————————————————————————————————————————————————————————————————————————
+
+## 四，使用AlertDialog确认框
+
+### 1，
+    编辑Activity中的代码
+     ————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity(), View.OnClickListener { 
+     ... 
+     override fun onClick(v: View?) { 
+     when (v?.id) { 
+     R.id.button -> { 
+     AlertDialog.Builder(this).apply { 
+     setTitle("This is Dialog") 
+     setMessage("Something important.") 
+     setCancelable(false) 
+     setPositiveButton("OK") { dialog, which -> 
+     } 
+     setNegativeButton("Cancel") { dialog, which -> 
+     } 
+     show() 
+     } 
+     } 
+     } 
+     } 
+     
+    }
+    ————————————————————————————————————————————————————
+
+## 五，引入自定义的标题栏布局
+    由于没有找到随书的图片资源，操作失败
+### 1，
+    这里我提前准备好了3张图片——title_bg.png、back_bg.png和edit_bg.png（资源下载地址见
+    前言），分别用于作为标题栏、返回按钮和编辑按钮的背景。
+    先在layout目录下创建一个title.xml布局，填写以下代码
+    ————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:background="@drawable/title_bg"> 
+     
+     <Button
+     android:id="@+id/titleBack" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center" 
+     android:layout_margin="5dp" 
+     android:background="@drawable/back_bg" 
+     android:text="Back" 
+     android:textColor="#fff" /> 
+     
+     <TextView 
+     android:id="@+id/titleText" 
+     android:layout_width="0dp" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center" 
+     android:layout_weight="1" 
+     android:gravity="center" 
+     android:text="Title Text" 
+     android:textColor="#fff" 
+     android:textSize="24sp" /> 
+     
+     <Button 
+     android:id="@+id/titleEdit" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center" 
+     android:layout_margin="5dp" 
+     android:background="@drawable/edit_bg" 
+     android:text="Edit" 
+     android:textColor="#fff" /> 
+     
+    </LinearLayout> 
+
+    ————————————————————————————————————————————————————————————
+
+### 2，
+    接着修改activity_main.xml中的代码，如下所示：
+    ————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <include layout="@layout/title" /> 
+     
+    </LinearLayout> 
+    ——————————————————————————————————————————————————————————————————————————
+
+### 3，
+    最后在MainActivity中将系统自带的标题栏隐藏掉，代码如下所示：
+    ——————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     supportActionBar?.hide() 
+     } 
+     
+    }
+    ——————————————————————————————————————————————————————————
+
+## 六，创建自定义控件
+
+### 1，
+    新建TitleLayout继承自LinearLayout，让它成为我们自定义的标题栏控件，代码如下所示：
+    ——————————————————————————————————————————————————————————————————————————————————————————
+    class TitleLayout(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) { 
+     
+     init { 
+     LayoutInflater.from(context).inflate(R.layout.title, this) 
+     } 
+     
+    }
+    ————————————————————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    接下来我们需要在布局文件中添加这个自定义控件，修改activity_main.xml中的代码，如下所示：
+    ——————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <com.example.uicustomviews.TitleLayout 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" /> 
+     
+    </LinearLayout> 
+    ——————————————————————————————————————————————————————————————————————
+
+### 3，
+    下面我们尝试为标题栏中的按钮注册点击事件，修改TitleLayout中的代码，如下所示：
+     ——————————————————————————————————————————————————————————————————————————————————————————————
+    class TitleLayout(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) { 
+     
+     init { 
+     LayoutInflater.from(context).inflate(R.layout.title, this) 
+     titleBack.setOnClickListener { 
+     val activity = context as Activity 
+     activity.finish() 
+     } 
+     titleEdit.setOnClickListener { 
+     Toast.makeText(context, "You clicked Edit button", Toast.LENGTH_SHORT).show() 
+     } 
+     } 
+     
+    }
+    ——————————————————————————————————————————————————————————————————————————————————————————————
+
+## 七，简单使用ListView
+
+### 1,
+    创建一个新项目，先修改 activity_main.xml中的代码
+    ————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <ListView 
+     android:id="@+id/listView" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" /> 
+     
+    </LinearLayout>
+    ——————————————————————————————————————————————————————————————————————————
+
+### 2,
+    接下来修改MainActivity中的代码
+    ———————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     private val data = listOf("Apple", "Banana", "Orange", "Watermelon", 
+     "Pear", "Grape", "Pineapple", "Strawberry", "Cherry", "Mango", 
+     "Apple", "Banana", "Orange", "Watermelon", "Pear", "Grape", 
+     "Pineapple", "Strawberry", "Cherry", "Mango") 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val adapter = ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,data) 
+     listView.adapter = adapter 
+     } 
+     
+    } 
+    ———————————————————————————————————————————————————————————————
+
+## 八，定制ListView的界面
+    缺点还是找不到合适的图片
+### 1，
+    首先需要准备好一组图片资源（资源下载地址见前言），分别对应上面提供的每一种水果，
+    待会我们要让这些水果名称的旁边都有一张相应的图片。
+    接着定义一个实体类，作为ListView适配器的适配类型。新建Fruit类，代码如下所示：
+    ————————————————————————————————————————————————————————————————————————————
+    class Fruit(val name:String, val imageId: Int)
+    ————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    然后需要为ListView的子项指定一个我们自定义的布局，在layout目录下新建fruit_item.xml，代码如下所示：
+    ————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="60dp"> 
+     
+     <ImageView 
+     android:id="@+id/fruitImage" 
+     android:layout_width="40dp" 
+     android:layout_height="40dp" 
+     android:layout_gravity="center_vertical" 
+     android:layout_marginLeft="10dp"/> 
+     
+     <TextView 
+     android:id="@+id/fruitName" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center_vertical" 
+     android:layout_marginLeft="10dp" /> 
+     
+    </LinearLayout> 
+    ————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    接下来需要创建一个自定义的适配器，这个适配器继承自ArrayAdapter，
+    并将泛型指定为 Fruit类。新建类FruitAdapter，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class FruitAdapter(activity: Activity, val resourceId: Int, data: List<Fruit>) : 
+     ArrayAdapter<Fruit>(activity, resourceId, data) { 
+     
+     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View { 
+     val view = LayoutInflater.from(context).inflate(resourceId, parent, false) 
+     val fruitImage: ImageView = view.findViewById(R.id.fruitImage) 
+     val fruitName: TextView = view.findViewById(R.id.fruitName) 
+     val fruit = getItem(position) // 获取当前项的Fruit实例 
+     if (fruit != null) { 
+     fruitImage.setImageResource(fruit.imageId) 
+     fruitName.text = fruit.name 
+     } 
+     return view 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 4，
+    最后修改MainActivity中的代码，如下所示：
+    ——————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     private val fruitList = ArrayList<Fruit>() 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     initFruits() // 初始化水果数据 
+     val adapter = FruitAdapter(this, R.layout.fruit_item, fruitList) 
+     listView.adapter = adapter 
+     } 
+     
+     private fun initFruits() { 
+     repeat(2) { 
+     fruitList.add(Fruit("Apple", R.drawable.apple_pic)) 
+     fruitList.add(Fruit("Banana", R.drawable.banana_pic)) 
+     fruitList.add(Fruit("Orange", R.drawable.orange_pic)) 
+     fruitList.add(Fruit("Watermelon", R.drawable.watermelon_pic)) 
+     fruitList.add(Fruit("Pear", R.drawable.pear_pic)) 
+     fruitList.add(Fruit("Grape", R.drawable.grape_pic)) 
+     fruitList.add(Fruit("Pineapple", R.drawable.pineapple_pic)) 
+     fruitList.add(Fruit("Strawberry", R.drawable.strawberry_pic)) 
+     fruitList.add(Fruit("Cherry", R.drawable.cherry_pic)) 
+     fruitList.add(Fruit("Mango", R.drawable.mango_pic)) 
+     } 
+     } 
+     
+    }
+    ——————————————————————————————————————————————————————————————————————————
+
+### 5，（提升ListView的运行效率）
+    修改FruitAdapter中的代码，如下所示：
+    ————————————————————————————————————————————————————————————————————————————————————
+    class FruitAdapter(activity: Activity, val resourceId: Int, data: List<Fruit>) : 
+     ArrayAdapter<Fruit>(activity, resourceId, data) { 
+     
+     inner class ViewHolder(val fruitImage: ImageView, val fruitName: TextView) 
+     
+     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View { 
+     val view: View 
+     val viewHolder: ViewHolder 
+     if (convertView == null) { 
+     view = LayoutInflater.from(context).inflate(resourceId, parent, false) 
+     val fruitImage: ImageView = view.findViewById(R.id.fruitImage) 
+     val fruitName: TextView = view.findViewById(R.id.fruitName) 
+     viewHolder = ViewHolder(fruitImage, fruitName) 
+     view.tag = viewHolder 
+     } else { 
+     view = convertView 
+     viewHolder = view.tag as ViewHolder 
+     } 
+     
+     val fruit = getItem(position) // 获取当前项的Fruit实例 
+     if (fruit != null) { 
+     viewHolder.fruitImage.setImageResource(fruit.imageId) 
+     viewHolder.fruitName.text = fruit.name 
+     } 
+     return view 
+     } 
+     
+    }
+    ————————————————————————————————————————————————————————————————————————————————————————
+
+### 6，（添加:ListView的点击事件）
+    修改MainActivity中的代码，如下所示：
+    ————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     private val fruitList = ArrayList<Fruit>() 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     initFruits() // 初始化水果数据 
+     val adapter = FruitAdapter(this, R.layout.fruit_item, fruitList) 
+     listView.adapter = adapter 
+     listView.setOnItemClickListener { parent, view, position, id -> 
+     val fruit = fruitList[position] 
+     Toast.makeText(this, fruit.name, Toast.LENGTH_SHORT).show() 
+     } 
+     } 
+     
+     ... 
+     
+    } 
+    ————————————————————————————————————————————————————————————————————————————
+
+## 九，RecyclerView的基本用法
+
+## 十，实现横向滚动和瀑布流布局
+
+## 十一，编辑RecyclerView的点击事件
+
+## 十二，制作9-Patch图片
+
+## 十三，编写精美的聊天界面
+
+# 《三》探究Fragment
+

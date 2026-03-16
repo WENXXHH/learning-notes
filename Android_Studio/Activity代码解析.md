@@ -574,8 +574,8 @@
 
     指定为singleInstance模式的Activity会启用一个新的返回栈来管理这个Activity
 
-# 《二》学习UI开发
-## 一，编辑Button事件
+# 《二》学习UI开发 ✔
+## 一，编辑Button事件   ✔
 ### 1，MainActivity中为Button的点击事件注册一个监听器
     ——————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -618,7 +618,7 @@
     然后在调用button的setOnClickListener()方法时将MainActivity的实例传了进去。这样
     每当点击按钮时，就会执行onClick()方法中的代码了。
 
-## 二，通过点击按钮获取EditText中输入的内容。
+## 二，通过点击按钮获取EditText中输入的内容。  ✔
     修改上文对Buton编辑的MainActivity中的代码
     ————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity(), View.OnClickListener { 
@@ -639,7 +639,7 @@
     我们在按钮的点击事件里调用EditText的getText()方法获取输入的内容，再调用
     toString()方法将内容转换成字符串，最后使用Toast将输入的内容显示出来。
 
-## 三，动态地更改ImageView中的图片
+## 三，动态地更改ImageView中的图片  ✔
     ——————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity(), View.OnClickListener { 
      
@@ -658,7 +658,7 @@
     在按钮的点击事件里，通过调用ImageView的setImageResource()方法将显示的图片改成
     img_2。现在重新运行程序，点击一下按钮，就可以看到ImageView中显示的图片改变了
 
-## 四，ProgressBar的可视调整
+## 四，ProgressBar的可视调整 ✔
 
 ### 1，可见与消失的转换
 
@@ -702,7 +702,7 @@
     }
     ————————————————————————————————————————————————————————————————————————
 
-## 五，AlertDialog确认对话框
+## 五，AlertDialog确认对话框  ✔
     ————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity(), View.OnClickListener { 
      ... 
@@ -730,7 +730,7 @@
     来调用setPositiveButton()方法为对话框设置确定按钮的点击事件，调用 setNegativeButton()方法
     设置取消按钮的点击事件，最后调用show()方法将对话框显示 出来就可以了。
 
-## 六，在MainActivity中将系统自带的标题栏隐藏掉
+## 六，在MainActivity中将系统自带的标题栏隐藏掉   ✔
     ——————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
      
@@ -745,7 +745,7 @@
     这里我们调用了getSupportActionBar()方法来获得ActionBar的实例，然后再调用它的
     hide()方法将标题栏隐藏起来。由于ActionBar有可能为空，所以这里还使用了?.操作符。
 
-## 七，创建自定义控件
+## 七，创建自定义控件  ✔
 
 ### 创建自定义控件类 TitleLayout.kt
     ——————————————————————————————————————————————————————————————————————————————————————————
@@ -788,7 +788,7 @@
     件里，我们要先将它转换成Activity类型，然后再调用finish()方法销毁当前的Activity。
     Kotlin中的类型强制转换使用的关键字是as，由于是第一次用到，所以这里单独讲解一下。
 
-## 八，ListView的简单用法
+## 八，ListView的简单用法 ✔
     首先修改activity_main.xml中的代码
     接下来修改MainActivity中的代码
     ———————————————————————————————————————————————————————————————
@@ -825,4 +825,3 @@
     ListView和数据之间的关联就建立完成了。
 
 
-//尝试一下半小时编辑一次

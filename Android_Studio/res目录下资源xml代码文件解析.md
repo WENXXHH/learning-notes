@@ -95,7 +95,7 @@
     android:title="Remove": 设置了这个菜单项的显示文本为 "Remove"。
 
 # 《二》UI系统学习   ✔
-## 一， TextView
+## 一， TextView   ✔
     ————————————————————————————————————————————————
     <TextView 
      android:layout_width="match_parent" 
@@ -119,10 +119,10 @@
     通过android:textColor属性可以指定文字的颜色，通过android:textSize属性可以指定
     文字的大小。文字大小要使用sp作为单位，这样当用户在系统中修改了文字显示尺寸时，应用程序中的文字大小也会跟着变化。、
 
-## 二，Button
+## 二，Button   ✔
     参考以前笔记
 
-## 三，EditText
+## 三，EditText  ✔
     ——————————————————————————————————————————————————————————
     <EditText 
      android:id="@+id/editText" 
@@ -138,7 +138,7 @@
     通过android:maxLines指定了EditText的最大行数为两行，这样当输入的内容超过两行
     时，文本就会向上滚动，EditText则不会再继续拉伸
 
-## 四，ImageView
+## 四，ImageView   ✔
     ——————————————————————————————————————————————————————————————
     <ImageView 
      android:id="@+id/imageView" 
@@ -148,10 +148,10 @@
      /> 
     ——————————————————————————————————————————————————————————————
     用android:src属性给ImageView指定了一张图片。由于图片的宽和高都是未知的，
-    所以将ImageView的宽和高都设定为wrap_content，
+    所以将ImageView的宽和高都设定为wrap_content，0
     这样就保证了不管图片的尺 寸是多少，都可以完整地展示出来。
 
-## 五，ProgressBar
+## 五，ProgressBar ✔
 
 ### 圆形进度条
 
@@ -176,7 +176,8 @@
     —————————————————————————————————————————————
     指定成水平进度条后，我们还可以通过android:max属性给进度条设置一个最大值，
 
-## 六，LinearLayout
+## 六，LinearLayout   ▲
+    注意如何使屏幕刚好充满，适应整个屏幕，这个值得回顾
 
     方向由 android:orientation 修改
     vertical 竖直排列
@@ -200,15 +201,15 @@
     果想让EditText占据屏幕宽度的3/5，Button占据屏幕宽度的2/5，只需要将EditText的
     layout_ weight改成3，Button的layout_weight改成2就可以了。
 
-## 七，RelativeLayout
+## 七，RelativeLayout    ▲
     RelativeLayout又称作相对布局，也是一种非常常用的布局。和LinearLayout的排列规则不
     同，RelativeLayout显得更加随意，它可以通过相对定位的方式让控件出现在布局的任何位 置。
 
-## 八，FrameLayout
+## 八，FrameLayout    ▲
     FrameLayout又称作帧布局，它相比于前面两种布局就简单太多了，因此它的应用场景少了很
     多。这种布局没有丰富的定位方式，所有的控件都会默认摆放在布局的左上角。
 
-## 九，自定义标题栏布局并引入
+## 九，自定义标题栏布局并引入      ✔
 
 ### 先创建一个title.xml布局，填写以下代码
 
@@ -273,7 +274,7 @@
     我们只需要通过一行include语句引入标题栏布局就可以了。
     别忘了在MainActivity中将系统自带的标题栏隐藏掉
 
-## 十，添加自定义控件
+## 十，添加自定义控件   ✔
     修改activity_main.xml中的代码
     ——————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -289,7 +290,7 @@
     添加自定义控件和添加普通控件的方式基本是一样的，只不过在添加自定义控件的时候，我们
     需要指明控件的完整类名，包名在这里是不可以省略的。
 
-## 十一，ListView的简单用法
+## 十一，ListView的简单用法   ✔
 ### 创建一个新项目，先修改 activity_main.xml中的代码
     ————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
