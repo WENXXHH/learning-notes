@@ -1020,3 +1020,285 @@
 
 # 《三》探究Fragment
 
+## 一，初步使用Fragment
+
+### 1，
+    先尝试实现在一个Activity当中添加两个Fragment，并让这两个Fragment平分Activity的空间。
+    新建一个左侧Fragment的布局left_fragment.xml，代码如下所示：
+    ——————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <Button 
+     android:id="@+id/button" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center_horizontal" 
+     android:text="Button" 
+     />
+    </LinearLayout> 
+    ——————————————————————————————————————————————————————————————————————————
+
+    然后新建右侧Fragment的布局right_fragment.xml，代码如下所示：
+    ——————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:background="#00ff00" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <TextView 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center_horizontal" 
+     android:textSize="24sp" 
+     android:text="This is right fragment" 
+     /> 
+     
+    </LinearLayout>
+    ——————————————————————————————————————————————————————————————————————————
+
+### 2，
+    接着新建一个LeftFragment类，并让它继承自Fragment。注意，这里可能会有两个不同包
+    下的Fragment供你选择：一个是系统内置的android.app.Fragment，一个是AndroidX库中
+    的androidx.fragment.app.Fragment。这里请一定要使用AndroidX库中的Fragment。
+    ——————————————————————————————————————————————————————————————————————————
+    package com.example.fifth1
+    
+    import android.os.Bundle
+    import android.view.LayoutInflater
+    import android.view.View
+    import android.view.ViewGroup
+    import android.widget.Button
+    import androidx.fragment.app.Fragment
+    
+    class LeftFragment : Fragment() {
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View? {
+            val view = inflater.inflate(R.layout.left_fragment, container, false)
+            view.findViewById<Button>(R.id.button).setOnClickListener {
+                // ✅ 确保 replaceFragment 是 public
+                (activity as MainActivity).replaceFragment(AnotherRightFragment())
+            }
+            return view
+        }
+    }
+    ——————————————————————————————————————————————————————————————————————————
+    
+    接着我们用同样的方法再新建一个RightFragment
+    ——————————————————————————————————————————————————————————————————————————
+    package com.example.fifth1
+    
+    import android.os.Bundle
+    import android.view.LayoutInflater
+    import android.view.View
+    import android.view.ViewGroup
+    import androidx.fragment.app.Fragment
+    
+    class RightFragment : Fragment() {
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View? {
+            return inflater.inflate(R.layout.right_fragment, container, false)
+        }
+    }
+    ——————————————————————————————————————————————————————————————————————————
+
+### 3，
+    接下来修改activity_main.xml中的代码，通过android:name属性来显式声明要添加的Fragment类名，
+    注意一定要将类的包名也加上。如下所示：
+    ——————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="horizontal" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <fragment 
+     android:id="@+id/leftFrag" 
+     android:name="com.example.fragmenttest.LeftFragment" 
+     android:layout_width="0dp" 
+     android:layout_height="match_parent" 
+     android:layout_weight="1" /> 
+     
+     <fragment 
+     android:id="@+id/rightFrag" 
+     android:name="com.example.fragmenttest.RightFragment" 
+     android:layout_width="0dp" 
+     android:layout_height="match_parent" 
+     android:layout_weight="1" /> 
+     
+    </LinearLayout> 
+    ——————————————————————————————————————————————————————————————————————————
+    至此，两个Fragment平分了整个Activity的布局。
+
+### 4，
+    继续新建another_right_fragment.xml，代码如下所示：
+    ——————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:background="#ffff00" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <TextView 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center_horizontal" 
+     android:textSize="24sp" 
+     android:text="This is another right fragment" 
+     /> 
+     
+    </LinearLayout>
+    ——————————————————————————————————————————————————————————————————————————
+
+### 5，
+    然后新建AnotherRightFragment作为另一个右侧Fragment，代码如下所示：
+    ——————————————————————————————————————————————————————————————————————————
+    package com.example.fifth1
+    
+    import android.os.Bundle
+    import android.view.LayoutInflater
+    import android.view.View
+    import android.view.ViewGroup
+    import androidx.fragment.app.Fragment
+    
+    class AnotherRightFragment : Fragment() {
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View? {
+            return inflater.inflate(R.layout.another_right_fragment, container, false)
+        }
+    }
+    ——————————————————————————————————————————————————————————————————————————
+
+### 6，
+    接下来看一下将它动态地添加到Activity当中。修改activity_main.xml，代码如下所示：
+    ——————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="horizontal" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <fragment 
+     android:id="@+id/leftFrag" 
+     android:name="com.example.fragmenttest.LeftFragment" 
+     android:layout_width="0dp" 
+     android:layout_height="match_parent" 
+     android:layout_weight="1" /> 
+     
+     <FrameLayout 
+     android:id="@+id/rightLayout" 
+     android:layout_width="0dp" 
+     android:layout_height="match_parent" 
+     android:layout_weight="1" > 
+     </FrameLayout> 
+     
+    </LinearLayout> 
+    ——————————————————————————————————————————————————————————————————————————
+
+### 7，
+    下面我们将在代码中向FrameLayout里添加内容，从而实现动态添加Fragment的功能。
+    修改MainActivity中的代码，如下所示：
+    ——————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
+            replaceFragment(RightFragment())
+        }
+     
+     private fun replaceFragment(fragment: Fragment) { 
+     val fragmentManager = supportFragmentManager 
+     val transaction = fragmentManager.beginTransaction() 
+     transaction.replace(R.id.rightLayout, fragment) 
+     transaction.commit() 
+     } 
+     
+    }
+    ——————————————————————————————————————————————————————————————————————————
+    这样就成功实现了向Activity中动态添加Fragment的功能。
+
+### 8，
+    想要实现类似于返回栈的效果，按下Back键可以回到上一个Fragment
+    修改MainActivity中的代码，如下所示：
+    ——————————————————————————————————————————————————————————————————————————
+    package com.example.fifth1
+
+    import android.os.Bundle
+    import androidx.appcompat.app.AppCompatActivity
+    import androidx.fragment.app.Fragment
+    
+    class MainActivity : AppCompatActivity() {
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
+            replaceFragment(RightFragment())
+        }
+    
+        fun replaceFragment(fragment: Fragment) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.rightLayout, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
+    }
+    ——————————————————————————————————————————————————————————————————————————
+
+### 9，（实现Fragment和Activity之间的交互）
+       为了方便Fragment和Activity之间进行交互，FragmentManager提供了一个类似于
+    findViewById()的方法，专门用于从布局文件中获取Fragment的实例，代码如下所示：
+    val fragment = supportFragmentManager.findFragmentById(R.id.leftFrag) as LeftFragment 
+    调用FragmentManager的findFragmentById()方法，可以在Activity中得到相应
+    Fragment的实例，然后就能轻松地调用Fragment里的方法了。
+    另外，类似于findViewById()方法，kotlin-android-extensions插件也对
+    findFragmentById()方法进行了扩展，允许我们直接使用布局文件中定义的Fragment id名
+    称来自动获取相应的Fragment实例，如下所示：
+    val fragment = leftFrag as LeftFragment 
+    那么毫无疑问，第二种写法是我们现在更加推荐的写法。
+    掌握了如何在Activity中调用Fragment里的方法，那么在Fragment中又该怎样调用Activity
+    里的方法呢？这就更简单了，在每个Fragment中都可以通过调用getActivity()方法来得到
+    和当前Fragment相关联的Activity实例，代码如下所示：
+    if (activity != null) { 
+     val mainActivity = activity as MainActivity 
+    } 
+    这里由于getActivity()方法有可能返回null，因此我们需要先进行一个判空处理。有了
+    Activity的实例，在Fragment中调用Activity里的方法就变得轻而易举了。另外当Fragment
+    中需要使用Context对象时，也可以使用getActivity()方法，因为获取到的Activity本身就
+    是一个Context对象。
+
+## 二，体验Fragment的生命周期
+
+### 1，
+
+### 2，
+
+### 3，
+
+### 4，
+
+## 三，
+
+## 四，
+
+## 五，
+
+## 六，
+
+## 七，
+
+## 八，
+
+## 九，
+
+## 十，
+
