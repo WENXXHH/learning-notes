@@ -1253,6 +1253,8 @@
         }
     }
     ——————————————————————————————————————————————————————————————————————————
+    如果发现运行不了，那你就可以查看logcat日志，现在的错误就是可以在AndroidMainfest的文件里面设置android:theme
+    android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
 
 ### 9，（实现Fragment和Activity之间的交互）
        为了方便Fragment和Activity之间进行交互，FragmentManager提供了一个类似于
@@ -1276,29 +1278,515 @@
     中需要使用Context对象时，也可以使用getActivity()方法，因为获取到的Activity本身就
     是一个Context对象。
 
-## 二，体验Fragment的生命周期
+### 10，（体验Fragment的生命周期）
+    在上一节的基础上，修改RightFragment中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class RightFragment : Fragment() { 
+     
+     companion object { 
+     const val TAG = "RightFragment" 
+     } 
+     
+     override fun onAttach(context: Context) { 
+     super.onAttach(context) 
+     Log.d(TAG, "onAttach") 
+     } 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     Log.d(TAG, "onCreate") 
+     } 
+     
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, 
+     savedInstanceState: Bundle?): View? { 
+     Log.d(TAG, "onCreateView") 
+     return inflater.inflate(R.layout.right_fragment, container, false) 
+     } 
+     
+     override fun onActivityCreated(savedInstanceState: Bundle?) { 
+     super.onActivityCreated(savedInstanceState) 
+     Log.d(TAG, "onActivityCreated") 
+     } 
+     
+     override fun onStart() { 
+     super.onStart() 
+     Log.d(TAG, "onStart") 
+     } 
+     
+     override fun onResume() { 
+     super.onResume() 
+     Log.d(TAG, "onResume") 
+     } 
+     
+     override fun onPause() { 
+     super.onPause() 
+     Log.d(TAG, "onPause") 
+     } 
+     
+     override fun onStop() { 
+     super.onStop() 
+     Log.d(TAG, "onStop") 
+     } 
+     
+     override fun onDestroyView() { 
+     super.onDestroyView() 
+     Log.d(TAG, "onDestroyView") 
+     } 
+     
+     override fun onDestroy() { 
+     super.onDestroy() 
+     Log.d(TAG, "onDestroy") 
+     } 
+     
+     override fun onDetach() { 
+     super.onDetach() 
+     Log.d(TAG, "onDetach") 
+     } 
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+## 二，动态选择加载布局
 
 ### 1，
+    想要实现不同的设备切换加载单页模式还是双页模式，
+    修改FragmentTest项目中的activity_main.xml文件，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="horizontal" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <fragment 
+     android:id="@+id/leftFrag" 
+     android:name="com.example.fragmenttest.LeftFragment" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"/> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+    如果是在上一节的基础上来继续写的，记得要删掉多余的代码，不然会报错
 
 ### 2，
+    接着在res目录下新建layout-large文件夹，在这个文件夹下新建一个布局，也叫作activity_main.xml
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="horizontal" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <fragment 
+     android:id="@+id/leftFrag" 
+     android:name="com.example.fragmenttest.LeftFragment" 
+     android:layout_width="0dp" 
+     android:layout_height="match_parent" 
+     android:layout_weight="1" /> 
+     
+     <fragment 
+     android:id="@+id/rightFrag" 
+     android:name="com.example.fragmenttest.RightFragment" 
+     android:layout_width="0dp" 
+     android:layout_height="match_parent" 
+     android:layout_weight="3" /> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+    然后将MainActivity中replaceFragment()方法里的代码注释掉，并在平板模拟器上重新运行程序
+    就实现了在手机和平板上加载不同界面的效果
 
 ### 3，
+    如果想要使用最小宽度限定符，
+    在res目录下新建layout-sw600dp文件夹，然后在这个文件夹下新建activity_main.xml布局，
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="horizontal" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <fragment 
+     android:id="@+id/leftFrag" 
+     android:name="com.example.fragmenttest.LeftFragment" 
+     android:layout_width="0dp" 
+     android:layout_height="match_parent" 
+     android:layout_weight="1" /> 
+     
+     <fragment 
+     android:id="@+id/rightFrag" 
+     android:name="com.example.fragmenttest.RightFragment" 
+     android:layout_width="0dp" 
+     android:layout_height="match_parent" 
+     android:layout_weight="3" /> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+
+## 三，制作一个一个简易版的新闻应用
+    运行失败了，有空需要再去完成这一个实践
+### 1，
+    先新建好一个FragmentBestPractice项目，
+    新建好一个FragmentBestPractice项目，
+    会使用到RecyclerView，因此首先需要在app/build.gradle当中添 加依赖库
+    —————————————————————————————————————————————————————————————————————————————
+    implementation 'androidx.recyclerview:recyclerview:1.0.0' 
+    —————————————————————————————————————————————————————————————————————————————
+
+    接下来我们要准备好一个新闻的实体类，新建类News，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class News(val title: String, val content: String)
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    接着新建布局文件news_content_frag.xml，作为新闻内容的布局：
+    —————————————————————————————————————————————————————————————————————————————
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <LinearLayout 
+     android:id="@+id/contentLayout" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     android:orientation="vertical" 
+     android:visibility="invisible" > 
+     
+     <TextView 
+     android:id="@+id/newsTitle" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:gravity="center" 
+     android:padding="10dp" 
+     android:textSize="20sp" /> 
+     
+     <View 
+     android:layout_width="match_parent" 
+     android:layout_height="1dp" 
+     android:background="#000" /> 
+     
+     <TextView 
+     android:id="@+id/newsContent" 
+     android:layout_width="match_parent" 
+     android:layout_height="0dp" 
+     android:layout_weight="1" 
+     android:padding="15dp" 
+     android:textSize="18sp" /> 
+     
+     </LinearLayout> 
+     
+     <View 
+     android:layout_width="1dp" 
+     android:layout_height="match_parent" 
+     android:layout_alignParentLeft="true" 
+     android:background="#000" /> 
+     
+    </RelativeLayout> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    接下来新建一个NewsContentFragment类，继承自Fragment，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class NewsContentFragment : Fragment() { 
+     
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, 
+     savedInstanceState: Bundle?): View? { 
+     return inflater.inflate(R.layout.news_content_frag, container, false) 
+     } 
+     
+     fun refresh(title: String, content: String) { 
+     contentLayout.visibility = View.VISIBLE 
+     newsTitle.text = title // 刷新新闻的标题 
+     newsContent.text = content // 刷新新闻的内容 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
 
 ### 4，
+    右击com.example.fragmentbestpractice包→New→Activity→Empty Activity，新建一个
+    NewsContentActivity，布局名就使用默认的activity_news_content即可。然后修改
+    activity_news_content.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <fragment 
+     android:id="@+id/newsContentFrag" 
+     android:name="com.example.fragmentbestpractice.NewsContentFragment" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     /> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
 
-## 三，
+### 5，
+    然后修改NewsContentActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class NewsContentActivity : AppCompatActivity() { 
+     
+     companion object { 
+     fun actionStart(context: Context, title: String, content: String) { 
+     val intent = Intent(context, NewsContentActivity::class.java).apply { 
+     putExtra("news_title", title) 
+     putExtra("news_content", content) 
+     } 
+     context.startActivity(intent) 
+     } 
+     } 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_news_content) 
+     val title = intent.getStringExtra("news_title") // 获取传入的新闻标题 
+     val content = intent.getStringExtra("news_content") // 获取传入的新闻内容 
+     if (title != null && content != null) { 
+     val fragment = newsContentFrag as NewsContentFragment 
+     fragment.refresh(title, content) //刷新NewsContentFragment界面 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
 
-## 四，
+### 6，
+    接下来还需要再创建一个用于显示新闻列表的布局，新建news_title_frag.xml
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <androidx.recyclerview.widget.RecyclerView 
+     android:id="@+id/newsTitleRecyclerView" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     /> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
 
-## 五，
+    新建news_item.xml作为RecyclerView子项的布局
+    —————————————————————————————————————————————————————————————————————————————
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:id="@+id/newsTitle" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:maxLines="1" 
+     android:ellipsize="end" 
+     android:textSize="18sp" 
+     android:paddingLeft="10dp" 
+     android:paddingRight="10dp" 
+     android:paddingTop="15dp" 
+     android:paddingBottom="15dp" />
+    —————————————————————————————————————————————————————————————————————————————
 
-## 六，
+### 7，
+    这里新建NewsTitleFragment作为展示新闻列表的Fragment，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class NewsTitleFragment : Fragment() { 
+     
+     private var isTwoPane = false 
+     
+     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, 
+     savedInstanceState: Bundle?): View? { 
+     return inflater.inflate(R.layout.news_title_frag, container, false) 
+     } 
+     
+     override fun onActivityCreated(savedInstanceState: Bundle?) { 
+     super.onActivityCreated(savedInstanceState) 
+     isTwoPane = activity?.findViewById<View>(R.id.newsContentLayout) != null 
+     } 
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
 
-## 七，
+### 8，
+    首先修改activity_main.xml中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:id="@+id/newsTitleLayout" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <fragment 
+     android:id="@+id/newsTitleFrag" 
+     android:name="com.example.fragmentbestpractice.NewsTitleFragment" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     /> 
+     
+    </FrameLayout>
+    —————————————————————————————————————————————————————————————————————————————
 
-## 八，
+    然后新建layout-sw600dp文件夹，在这个文件夹下再新建一个activity_main.xml文件
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="horizontal" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <fragment 
+     android:id="@+id/newsTitleFrag" 
+     android:name="com.example.fragmentbestpractice.NewsTitleFragment" 
+     android:layout_width="0dp" 
+     android:layout_height="match_parent" 
+     android:layout_weight="1" /> 
+     
+     <FrameLayout 
+     android:id="@+id/newsContentLayout" 
+     android:layout_width="0dp" 
+     android:layout_height="match_parent" 
+     android:layout_weight="3" > 
+     
+     <fragment 
+     android:id="@+id/newsContentFrag" 
+     android:name="com.example.fragmentbestpractice.NewsContentFragment" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" /> 
+     </FrameLayout> 
+     
+    </LinearLayout> 
+    —————————————————————————————————————————————————————————————————————————————
 
-## 九，
+### 9，
+    我们在NewsTitleFragment中新建一个内部类NewsAdapter来作为RecyclerView的适配器
+    —————————————————————————————————————————————————————————————————————————————
+    class NewsTitleFragment : Fragment() { 
+     
+     private var isTwoPane = false 
+     
+     ... 
+     
+     inner class NewsAdapter(val newsList: List<News>) : 
+     RecyclerView.Adapter<NewsAdapter.ViewHolder>() { 
+     
+     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) { 
+     val newsTitle: TextView = view.findViewById(R.id.newsTitle) 
+     } 
+     
+     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder { 
+     val view = LayoutInflater.from(parent.context) 
+     .inflate(R.layout.news_item, parent, false) 
+     val holder = ViewHolder(view) 
+     holder.itemView.setOnClickListener { 
+     val news = newsList[holder.adapterPosition] 
+     if (isTwoPane) { 
+     // 如果是双页模式，则刷新NewsContentFragment中的内容 
+     val fragment = newsContentFrag as NewsContentFragment 
+     fragment.refresh(news.title, news.content) 
+     } else { 
+     // 如果是单页模式，则直接启动NewsContentActivity 
+     NewsContentActivity.actionStart(parent.context, news.title, 
+     news.content) 
+     } 
+     } 
+     return holder 
+     } 
+     
+     override fun onBindViewHolder(holder: ViewHolder, position: Int) { 
+     val news = newsList[position] 
+     holder.newsTitle.text = news.title 
+     } 
+     
+     override fun getItemCount() = newsList.size 
+     
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
 
-## 十，
+### 10，
+    现在还剩最后一步收尾工作，就是向RecyclerView中填充数据了。修改NewsTitleFragment中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class NewsTitleFragment : Fragment() { 
+     ... 
+     override fun onActivityCreated(savedInstanceState: Bundle?) { 
+     super.onActivityCreated(savedInstanceState) 
+     isTwoPane = activity?.findViewById<View>(R.id.newsContentLayout) != null 
+     val layoutManager = LinearLayoutManager(activity) 
+     newsTitleRecyclerView.layoutManager = layoutManager 
+     val adapter = NewsAdapter(getNews()) 
+     newsTitleRecyclerView.adapter = adapter 
+     } 
+     
+     private fun getNews(): List<News> { 
+     val newsList = ArrayList<News>() 
+     for (i in 1..50) { 
+     val news = News("This is news title $i", getRandomLengthString("This is news 
+     content $i. ")) 
+     newsList.add(news) 
+     } 
+     return newsList 
+     } 
+     
+     private fun getRandomLengthString(str: String): String { 
+     val n = (1..20).random() 
+     val builder = StringBuilder() 
+     repeat(n) { 
+     builder.append(str) 
+     } 
+     return builder.toString() 
+     } 
+     ... 
+    }
+    —————————————————————————————————————————————————————————————————————————————
 
+# 《四》详解广播机制
+
+## 一，动态注册监听时间变化
+
+### 1，
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 二，静态注册实现开机启动
+
+### 1，
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 三，发送标准广播
+
+### 1，
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 四，发送有序广播
+
+### 1，
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 五，实现强制下线功能
+
+### 1，
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+# 《五》数据存储全方案，详解持久化技术
+
+## 一，
+
+### 1，
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+## 
+
+### 1，
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
