@@ -1421,371 +1421,907 @@
     —————————————————————————————————————————————————————————————————————————————
 
 ## 三，制作一个一个简易版的新闻应用
-    运行失败了，有空需要再去完成这一个实践
-### 1，
-    先新建好一个FragmentBestPractice项目，
-    新建好一个FragmentBestPractice项目，
-    会使用到RecyclerView，因此首先需要在app/build.gradle当中添 加依赖库
+
+### 1. 创建项目
+    打开Android Studio → New Project → Empty Activity
+    Name: FragmentBestPractice
+    Language: Kotlin
+    Minimum SDK: API 21: Android 5.0 (Lollipop)（可选）
+
+### 2. 添加RecyclerView依赖
+    打开 app/build.gradle，在 dependencies 中添加：
     —————————————————————————————————————————————————————————————————————————————
-    implementation 'androidx.recyclerview:recyclerview:1.0.0' 
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
     —————————————————————————————————————————————————————————————————————————————
 
-    接下来我们要准备好一个新闻的实体类，新建类News，代码如下所示：
+### 3. 创建News类
+    右键点击 com.example.fragmentbestpractice 包 → New → Kotlin Class/File  Name: News
     —————————————————————————————————————————————————————————————————————————————
     class News(val title: String, val content: String)
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
-    接着新建布局文件news_content_frag.xml，作为新闻内容的布局：
+### 4. 创建布局文件 res/layout/news_content_frag.xml
     —————————————————————————————————————————————————————————————————————————————
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" 
-     android:layout_width="match_parent" 
-     android:layout_height="match_parent"> 
-     
-     <LinearLayout 
-     android:id="@+id/contentLayout" 
-     android:layout_width="match_parent" 
-     android:layout_height="match_parent" 
-     android:orientation="vertical" 
-     android:visibility="invisible" > 
-     
-     <TextView 
-     android:id="@+id/newsTitle" 
-     android:layout_width="match_parent" 
-     android:layout_height="wrap_content" 
-     android:gravity="center" 
-     android:padding="10dp" 
-     android:textSize="20sp" /> 
-     
-     <View 
-     android:layout_width="match_parent" 
-     android:layout_height="1dp" 
-     android:background="#000" /> 
-     
-     <TextView 
-     android:id="@+id/newsContent" 
-     android:layout_width="match_parent" 
-     android:layout_height="0dp" 
-     android:layout_weight="1" 
-     android:padding="15dp" 
-     android:textSize="18sp" /> 
-     
-     </LinearLayout> 
-     
-     <View 
-     android:layout_width="1dp" 
-     android:layout_height="match_parent" 
-     android:layout_alignParentLeft="true" 
-     android:background="#000" /> 
-     
-    </RelativeLayout> 
+       <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+           android:layout_width="match_parent"
+           android:layout_height="match_parent">
+    
+           <LinearLayout
+               android:id="@+id/contentLayout"
+               android:layout_width="match_parent"
+               android:layout_height="match_parent"
+               android:orientation="vertical"
+               android:visibility="invisible">
+    
+               <TextView
+                   android:id="@+id/newsTitle"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:gravity="center"
+                   android:padding="10dp"
+                   android:textSize="20sp" />
+    
+               <View
+                   android:layout_width="match_parent"
+                   android:layout_height="1dp"
+                   android:background="#000" />
+    
+               <TextView
+                   android:id="@+id/newsContent"
+                   android:layout_width="match_parent"
+                   android:layout_height="0dp"
+                   android:layout_weight="1"
+                   android:padding="15dp"
+                   android:textSize="18sp" />
+    
+           </LinearLayout>
+    
+           <View
+               android:layout_width="1dp"
+               android:layout_height="match_parent"
+               android:layout_alignParentLeft="true"
+               android:background="#000" />
+    
+    </RelativeLayout>
     —————————————————————————————————————————————————————————————————————————————
 
-### 3，
-    接下来新建一个NewsContentFragment类，继承自Fragment，代码如下所示：
+### 5. 创建 NewsContentFragment.kt
+    右键点击包 → New → Kotlin Class/File → Name: NewsContentFragment
     —————————————————————————————————————————————————————————————————————————————
-    class NewsContentFragment : Fragment() { 
-     
-     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, 
-     savedInstanceState: Bundle?): View? { 
-     return inflater.inflate(R.layout.news_content_frag, container, false) 
-     } 
-     
-     fun refresh(title: String, content: String) { 
-     contentLayout.visibility = View.VISIBLE 
-     newsTitle.text = title // 刷新新闻的标题 
-     newsContent.text = content // 刷新新闻的内容 
-     } 
-     
+    import android.os.Bundle
+    import android.view.LayoutInflater
+    import android.view.View
+    import android.view.ViewGroup
+    import android.widget.TextView
+    import androidx.fragment.app.Fragment
+    
+    class NewsContentFragment : Fragment() {
+        private lateinit var contentLayout: View
+        private lateinit var newsTitle: TextView
+        private lateinit var newsContent: TextView
+    
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View? {
+            return inflater.inflate(R.layout.news_content_frag, container, false)
+        }
+    
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
+            contentLayout = view.findViewById(R.id.contentLayout)
+            newsTitle = view.findViewById(R.id.newsTitle)
+            newsContent = view.findViewById(R.id.newsContent)
+        }
+    
+        fun refresh(title: String, content: String) {
+            contentLayout.visibility = View.VISIBLE
+            newsTitle.text = title
+            newsContent.text = content
+        }
     }
     —————————————————————————————————————————————————————————————————————————————
 
-### 4，
-    右击com.example.fragmentbestpractice包→New→Activity→Empty Activity，新建一个
-    NewsContentActivity，布局名就使用默认的activity_news_content即可。然后修改
-    activity_news_content.xml中的代码，如下所示：
+### 6. 创建 NewsContentActivity.kt
+    右键点击包 → New → Activity → Empty Activity
     —————————————————————————————————————————————————————————————————————————————
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
-     android:orientation="vertical" 
-     android:layout_width="match_parent" 
-     android:layout_height="match_parent"> 
-     
-     <fragment 
-     android:id="@+id/newsContentFrag" 
-     android:name="com.example.fragmentbestpractice.NewsContentFragment" 
-     android:layout_width="match_parent" 
-     android:layout_height="match_parent" 
-     /> 
-     
-    </LinearLayout>
-    —————————————————————————————————————————————————————————————————————————————
-
-### 5，
-    然后修改NewsContentActivity中的代码，如下所示：
-    —————————————————————————————————————————————————————————————————————————————
-    class NewsContentActivity : AppCompatActivity() { 
-     
-     companion object { 
-     fun actionStart(context: Context, title: String, content: String) { 
-     val intent = Intent(context, NewsContentActivity::class.java).apply { 
-     putExtra("news_title", title) 
-     putExtra("news_content", content) 
-     } 
-     context.startActivity(intent) 
-     } 
-     } 
-     
-     override fun onCreate(savedInstanceState: Bundle?) { 
-     super.onCreate(savedInstanceState) 
-     setContentView(R.layout.activity_news_content) 
-     val title = intent.getStringExtra("news_title") // 获取传入的新闻标题 
-     val content = intent.getStringExtra("news_content") // 获取传入的新闻内容 
-     if (title != null && content != null) { 
-     val fragment = newsContentFrag as NewsContentFragment 
-     fragment.refresh(title, content) //刷新NewsContentFragment界面 
-     } 
-     } 
-     
+    import android.content.Context
+    import android.content.Intent
+    import android.os.Bundle
+    import androidx.appcompat.app.AppCompatActivity
+    
+    class NewsContentActivity : AppCompatActivity() {
+        companion object {
+            fun actionStart(context: Context, title: String, content: String) {
+                val intent = Intent(context, NewsContentActivity::class.java).apply {
+                    putExtra("news_title", title)
+                    putExtra("news_content", content)
+                }
+                context.startActivity(intent)
+            }
+        }
+    
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_news_content)
+    
+            val title = intent.getStringExtra("news_title")
+            val content = intent.getStringExtra("news_content")
+            if (title != null && content != null) {
+                val fragment = supportFragmentManager.findFragmentById(R.id.newsContentFrag) as NewsContentFragment
+                fragment.refresh(title, content)
+            }
+        }
     }
     —————————————————————————————————————————————————————————————————————————————
 
-### 6，
-    接下来还需要再创建一个用于显示新闻列表的布局，新建news_title_frag.xml
+### 7. 创建 res/layout/activity_news_content.xml
     —————————————————————————————————————————————————————————————————————————————
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
-     android:orientation="vertical" 
-     android:layout_width="match_parent" 
-     android:layout_height="match_parent"> 
-     
-     <androidx.recyclerview.widget.RecyclerView 
-     android:id="@+id/newsTitleRecyclerView" 
-     android:layout_width="match_parent" 
-     android:layout_height="match_parent" 
-     /> 
-     
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    
+        <fragment
+            android:id="@+id/newsContentFrag"
+            android:name="com.example.fragmentbestpractice.NewsContentFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+    
     </LinearLayout>
     —————————————————————————————————————————————————————————————————————————————
 
-    新建news_item.xml作为RecyclerView子项的布局
+### 8. 创建 res/layout/news_title_frag.xml
     —————————————————————————————————————————————————————————————————————————————
-    <TextView xmlns:android="http://schemas.android.com/apk/res/android" 
-     android:id="@+id/newsTitle" 
-     android:layout_width="match_parent" 
-     android:layout_height="wrap_content" 
-     android:maxLines="1" 
-     android:ellipsize="end" 
-     android:textSize="18sp" 
-     android:paddingLeft="10dp" 
-     android:paddingRight="10dp" 
-     android:paddingTop="15dp" 
-     android:paddingBottom="15dp" />
-    —————————————————————————————————————————————————————————————————————————————
-
-### 7，
-    这里新建NewsTitleFragment作为展示新闻列表的Fragment，代码如下所示：
-    —————————————————————————————————————————————————————————————————————————————
-    class NewsTitleFragment : Fragment() { 
-     
-     private var isTwoPane = false 
-     
-     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, 
-     savedInstanceState: Bundle?): View? { 
-     return inflater.inflate(R.layout.news_title_frag, container, false) 
-     } 
-     
-     override fun onActivityCreated(savedInstanceState: Bundle?) { 
-     super.onActivityCreated(savedInstanceState) 
-     isTwoPane = activity?.findViewById<View>(R.id.newsContentLayout) != null 
-     } 
-     
-    } 
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/newsTitleRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+    
+    </LinearLayout>
     —————————————————————————————————————————————————————————————————————————————
 
-### 8，
-    首先修改activity_main.xml中的代码
+### 9. 创建 res/layout/news_item.xml
     —————————————————————————————————————————————————————————————————————————————
-    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" 
-     android:id="@+id/newsTitleLayout" 
-     android:layout_width="match_parent" 
-     android:layout_height="match_parent" > 
-     
-     <fragment 
-     android:id="@+id/newsTitleFrag" 
-     android:name="com.example.fragmentbestpractice.NewsTitleFragment" 
-     android:layout_width="match_parent" 
-     android:layout_height="match_parent" 
-     /> 
-     
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/newsTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textSize="18sp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp" />
+    —————————————————————————————————————————————————————————————————————————————
+
+### 10. 创建 NewsTitleFragment.kt
+    右键点击包 → New → Kotlin Class/File → Name: NewsTitleFragment
+    —————————————————————————————————————————————————————————————————————————————
+    import android.os.Bundle
+    import android.view.LayoutInflater
+    import android.view.View
+    import android.view.ViewGroup
+    import androidx.fragment.app.Fragment
+    import androidx.recyclerview.widget.LinearLayoutManager
+    import androidx.recyclerview.widget.RecyclerView
+    
+    class NewsTitleFragment : Fragment() {
+        private var isTwoPane = false
+    
+        override fun onCreateView(
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View? {
+            return inflater.inflate(R.layout.news_title_frag, container, false)
+        }
+    
+        override fun onActivityCreated(savedInstanceState: Bundle?) {
+            super.onActivityCreated(savedInstanceState)
+            isTwoPane = activity?.findViewById<View>(R.id.newsContentLayout) != null
+            val recyclerView = requireView().findViewById<RecyclerView>(R.id.newsTitleRecyclerView)
+            recyclerView.layoutManager = LinearLayoutManager(activity)
+            recyclerView.adapter = NewsAdapter(getNews())
+        }
+    
+        inner class NewsAdapter(val newsList: List<News>) : RecyclerView.Adapter<NewsAdapter.ViewHolder>() {
+            inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+                val newsTitle: TextView = view.findViewById(R.id.newsTitle)
+            }
+    
+            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+                val view = LayoutInflater.from(parent.context).inflate(R.layout.news_item, parent, false)
+                val holder = ViewHolder(view)
+                holder.itemView.setOnClickListener {
+                    val news = newsList[holder.adapterPosition]
+                    if (isTwoPane) {
+                        val fragment = activity?.supportFragmentManager?.findFragmentById(R.id.newsContentFrag) as NewsContentFragment
+                        fragment.refresh(news.title, news.content)
+                    } else {
+                        NewsContentActivity.actionStart(requireContext(), news.title, news.content)
+                    }
+                }
+                return holder
+            }
+    
+            override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+                holder.newsTitle.text = newsList[position].title
+            }
+    
+            override fun getItemCount() = newsList.size
+        }
+    
+        private fun getNews(): List<News> {
+            val newsList = ArrayList<News>()
+            for (i in 1..50) {
+                val news = News("This is news title $i", getRandomLengthString("This is news content $i. "))
+                newsList.add(news)
+            }
+            return newsList
+        }
+    
+        private fun getRandomLengthString(str: String): String {
+            val n = (1..20).random()
+            return StringBuilder().apply { repeat(n) { append(str) } }.toString()
+        }
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 11. 创建 MainActivity.kt
+    右键点击包 → New → Activity → Empty Activity
+    —————————————————————————————————————————————————————————————————————————————
+    import android.os.Bundle
+    import androidx.appcompat.app.AppCompatActivity
+    
+    class MainActivity : AppCompatActivity() {
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
+        }
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 12. 创建布局文件 res/layout/activity_main.xml
+    —————————————————————————————————————————————————————————————————————————————
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/newsTitleLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    
+        <fragment
+            android:id="@+id/newsTitleFrag"
+            android:name="com.example.fragmentbestpractice.NewsTitleFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+    
     </FrameLayout>
     —————————————————————————————————————————————————————————————————————————————
 
-    然后新建layout-sw600dp文件夹，在这个文件夹下再新建一个activity_main.xml文件
+### 13. 创建双屏布局 res/layout-sw600dp/activity_main.xml
+    右键点击 res 文件夹 → New → Android Resource Directory
+    Resource type: layout
+    Resource qualifier: sw600dp (smallest width 600dp)
+    在新创建的 layout-sw600dp 文件夹中创建 activity_main.xml
     —————————————————————————————————————————————————————————————————————————————
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
-     android:orientation="horizontal" 
-     android:layout_width="match_parent" 
-     android:layout_height="match_parent" > 
-     
-     <fragment 
-     android:id="@+id/newsTitleFrag" 
-     android:name="com.example.fragmentbestpractice.NewsTitleFragment" 
-     android:layout_width="0dp" 
-     android:layout_height="match_parent" 
-     android:layout_weight="1" /> 
-     
-     <FrameLayout 
-     android:id="@+id/newsContentLayout" 
-     android:layout_width="0dp" 
-     android:layout_height="match_parent" 
-     android:layout_weight="3" > 
-     
-     <fragment 
-     android:id="@+id/newsContentFrag" 
-     android:name="com.example.fragmentbestpractice.NewsContentFragment" 
-     android:layout_width="match_parent" 
-     android:layout_height="match_parent" /> 
-     </FrameLayout> 
-     
-    </LinearLayout> 
-    —————————————————————————————————————————————————————————————————————————————
-
-### 9，
-    我们在NewsTitleFragment中新建一个内部类NewsAdapter来作为RecyclerView的适配器
-    —————————————————————————————————————————————————————————————————————————————
-    class NewsTitleFragment : Fragment() { 
-     
-     private var isTwoPane = false 
-     
-     ... 
-     
-     inner class NewsAdapter(val newsList: List<News>) : 
-     RecyclerView.Adapter<NewsAdapter.ViewHolder>() { 
-     
-     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) { 
-     val newsTitle: TextView = view.findViewById(R.id.newsTitle) 
-     } 
-     
-     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder { 
-     val view = LayoutInflater.from(parent.context) 
-     .inflate(R.layout.news_item, parent, false) 
-     val holder = ViewHolder(view) 
-     holder.itemView.setOnClickListener { 
-     val news = newsList[holder.adapterPosition] 
-     if (isTwoPane) { 
-     // 如果是双页模式，则刷新NewsContentFragment中的内容 
-     val fragment = newsContentFrag as NewsContentFragment 
-     fragment.refresh(news.title, news.content) 
-     } else { 
-     // 如果是单页模式，则直接启动NewsContentActivity 
-     NewsContentActivity.actionStart(parent.context, news.title, 
-     news.content) 
-     } 
-     } 
-     return holder 
-     } 
-     
-     override fun onBindViewHolder(holder: ViewHolder, position: Int) { 
-     val news = newsList[position] 
-     holder.newsTitle.text = news.title 
-     } 
-     
-     override fun getItemCount() = newsList.size 
-     
-     } 
-     
-    }
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    
+        <fragment
+            android:id="@+id/newsTitleFrag"
+            android:name="com.example.fragmentbestpractice.NewsTitleFragment"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+    
+        <FrameLayout
+            android:id="@+id/newsContentLayout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3">
+    
+            <fragment
+                android:id="@+id/newsContentFrag"
+                android:name="com.example.fragmentbestpractice.NewsContentFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </FrameLayout>
+    
+    </LinearLayout>
     —————————————————————————————————————————————————————————————————————————————
 
-### 10，
-    现在还剩最后一步收尾工作，就是向RecyclerView中填充数据了。修改NewsTitleFragment中的代码
+### 14. 修改 AndroidManifest.xml
     —————————————————————————————————————————————————————————————————————————————
-    class NewsTitleFragment : Fragment() { 
-     ... 
-     override fun onActivityCreated(savedInstanceState: Bundle?) { 
-     super.onActivityCreated(savedInstanceState) 
-     isTwoPane = activity?.findViewById<View>(R.id.newsContentLayout) != null 
-     val layoutManager = LinearLayoutManager(activity) 
-     newsTitleRecyclerView.layoutManager = layoutManager 
-     val adapter = NewsAdapter(getNews()) 
-     newsTitleRecyclerView.adapter = adapter 
-     } 
-     
-     private fun getNews(): List<News> { 
-     val newsList = ArrayList<News>() 
-     for (i in 1..50) { 
-     val news = News("This is news title $i", getRandomLengthString("This is news 
-     content $i. ")) 
-     newsList.add(news) 
-     } 
-     return newsList 
-     } 
-     
-     private fun getRandomLengthString(str: String): String { 
-     val n = (1..20).random() 
-     val builder = StringBuilder() 
-     repeat(n) { 
-     builder.append(str) 
-     } 
-     return builder.toString() 
-     } 
-     ... 
-    }
+    <?xml version="1.0" encoding="utf-8"?>
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.example.fragmentbestpractice">
+    
+        <application
+            android:allowBackup="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:supportsRtl="true"
+            android:theme="@style/AppTheme">
+            <activity android:name=".MainActivity">
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+                    <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+            </activity>
+            <activity android:name=".NewsContentActivity" />
+        </application>
+    
+    </manifest>
     —————————————————————————————————————————————————————————————————————————————
 
 # 《四》详解广播机制
 
 ## 一，动态注册监听时间变化
 
-### 1，
-    
+### 
+    新建一个BroadcastTest项目，然后修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
-
+    class MainActivity : AppCompatActivity() { 
+     
+     lateinit var timeChangeReceiver: TimeChangeReceiver 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val intentFilter = IntentFilter() 
+     intentFilter.addAction("android.intent.action.TIME_TICK") 
+     timeChangeReceiver = TimeChangeReceiver() 
+     registerReceiver(timeChangeReceiver, intentFilter) 
+     } 
+     
+     override fun onDestroy() { 
+     super.onDestroy() 
+     unregisterReceiver(timeChangeReceiver) 
+     } 
+     
+     inner class TimeChangeReceiver : BroadcastReceiver() { 
+     
+     override fun onReceive(context: Context, intent: Intent) { 
+     Toast.makeText(context, "Time has changed", Toast.LENGTH_SHORT).show() 
+     } 
+     
+     } 
+     
+    }
     —————————————————————————————————————————————————————————————————————————————
 
 ## 二，静态注册实现开机启动
-
+    模拟器运行时竟然失败了，ohno
 ### 1，
-    
+    上一小节中我们是使用内部类的方式创建的BroadcastReceiver，其实还可以通过Android Studio
+    提供的快捷方式来创建。右击com.example.broadcasttest包→New→Other→Broadcast Receiver
+    这里我们将创建的类命名为BootCompleteReceiver，Exported属性表示是否允
+    许这个BroadcastReceiver接收本程序以外的广播，Enabled属性表示是否启用这个
+    BroadcastReceiver。勾选这两个属性，点击“Finish”完成创建。
+    —————————————————————————————————————————————————————————————————————————————
+    class BootCompleteReceiver : BroadcastReceiver() { 
+     
+     override fun onReceive(context: Context, intent: Intent) { 
+     Toast.makeText(context, "Boot Complete", Toast.LENGTH_LONG).show() 
+     } 
+     
+    }
     —————————————————————————————————————————————————————————————————————————————
 
+### 2，
+    对AndroidManifest.xml文件进行修改
+    —————————————————————————————————————————————————————————————————————————————
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+     package="com.example.broadcasttest"> 
+     
+     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> 
+     
+     <application 
+     android:allowBackup="true" 
+     android:icon="@mipmap/ic_launcher" 
+     android:label="@string/app_name" 
+     android:roundIcon="@mipmap/ic_launcher_round" 
+     android:supportsRtl="true" 
+     android:theme="@style/AppTheme"> 
+     ... 
+     <receiver 
+     android:name=".BootCompleteReceiver" 
+     android:enabled="true" 
+     android:exported="true"> 
+     <intent-filter> 
+     <action android:name="android.intent.action.BOOT_COMPLETED" /> 
+     </intent-filter> 
+     </receiver> 
+     </application> 
+     
+    </manifest>
     —————————————————————————————————————————————————————————————————————————————
 
 ## 三，发送标准广播
 
 ### 1，
-    
+    新建一个MyBroadcastReceiver，并在onReceive()方法中加入如下代码：
+    —————————————————————————————————————————————————————————————————————————————
+    class MyBroadcastReceiver : BroadcastReceiver() { 
+     
+     override fun onReceive(context: Context, intent: Intent) { 
+     Toast.makeText(context, "received in MyBroadcastReceiver", 
+     Toast.LENGTH_SHORT).show() 
+     } 
+     
+    } 
     —————————————————————————————————————————————————————————————————————————————
 
+### 2，
+    然后在AndroidManifest.xml中对这个BroadcastReceiver进行修改：
+    —————————————————————————————————————————————————————————————————————————————
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+     package="com.example.broadcasttest"> 
+     ... 
+     <application 
+     android:allowBackup="true" 
+     android:icon="@mipmap/ic_launcher" 
+     android:label="@string/app_name" 
+     android:roundIcon="@mipmap/ic_launcher_round" 
+     android:supportsRtl="true" 
+     android:theme="@style/AppTheme"> 
+     ... 
+     <receiver 
+     android:name=".MyBroadcastReceiver" 
+     android:enabled="true" 
+     android:exported="true"> 
+     <intent-filter> 
+     <action android:name="com.example.broadcasttest.MY_BROADCAST"/> 
+     </intent-filter> 
+     </receiver> 
+     </application> 
+    </manifest>
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    接下来修改activity_main.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <Button 
+     android:id="@+id/button" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Send Broadcast" 
+     /> 
+     
+    </LinearLayout> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 4，
+    然后修改MainActivity中的代码，添加按钮的点击事件如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     ... 
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     button.setOnClickListener { 
+     val intent = Intent("com.example.broadcasttest.MY_BROADCAST") 
+     intent.setPackage(packageName) 
+     sendBroadcast(intent) 
+     } 
+     ... 
+     } 
+     ... 
+    }
     —————————————————————————————————————————————————————————————————————————————
 
 ## 四，发送有序广播
 
 ### 1，
-    
+    创建一个新的BroadcastReceiver。新建AnotherBroadcastReceiver，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class AnotherBroadcastReceiver : BroadcastReceiver() { 
+     
+     override fun onReceive(context: Context, intent: Intent) { 
+     Toast.makeText(context, "received in AnotherBroadcastReceiver", 
+     Toast.LENGTH_SHORT).show() 
+     } 
+     
+    }
     —————————————————————————————————————————————————————————————————————————————
 
+### 2，
+    然后在AndroidManifest.xml中对这个BroadcastReceiver的配置进行修改，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+     package="com.example.broadcasttest"> 
+     ... 
+     <application 
+     android:allowBackup="true" 
+     android:icon="@mipmap/ic_launcher" 
+     android:label="@string/app_name" 
+     android:roundIcon="@mipmap/ic_launcher_round" 
+     android:supportsRtl="true" 
+     android:theme="@style/AppTheme"> 
+     ... 
+     <receiver 
+     android:name=".AnotherBroadcastReceiver" 
+     android:enabled="true" 
+     android:exported="true"> 
+     <intent-filter> 
+     <action android:name="com.example.broadcasttest.MY_BROADCAST" /> 
+     </intent-filter> 
+     </receiver> 
+     </application> 
+    </manifest> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    重新回到BroadcastTest项目，然后修改MainActivity中的点击按钮事件的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     ... 
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     button.setOnClickListener { 
+     val intent = Intent("com.example.broadcasttest.MY_BROADCAST") 
+     intent.setPackage(packageName) 
+     sendOrderedBroadcast(intent, null) 
+     } 
+     ... 
+     } 
+     ... 
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 4，
+    设定BroadcastReceiver的先后顺序，修改AndroidManifest.xml中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+     package="com.example.broadcasttest"> 
+     ... 
+     <application 
+     android:allowBackup="true" 
+     android:icon="@mipmap/ic_launcher" 
+     android:label="@string/app_name" 
+     android:roundIcon="@mipmap/ic_launcher_round" 
+     android:supportsRtl="true" 
+     android:theme="@style/AppTheme"> 
+     ... 
+     <receiver 
+     android:name=".MyBroadcastReceiver" 
+     android:enabled="true" 
+     android:exported="true"> 
+     <intent-filter android:priority="100"> 
+     <action android:name="com.example.broadcasttest.MY_BROADCAST"/> 
+     </intent-filter> 
+     </receiver> 
+     ... 
+     </application> 
+    </manifest> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 5，
+    选择是否允许广播继续传递了。修改MyBroadcastReceiver中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MyBroadcastReceiver : BroadcastReceiver() { 
+     
+     override fun onReceive(context: Context, intent: Intent) { 
+     Toast.makeText(context, "received in MyBroadcastReceiver", 
+     Toast.LENGTH_SHORT).show() 
+     abortBroadcast() 
+     } 
+     
+    }
     —————————————————————————————————————————————————————————————————————————————
 
 ## 五，实现强制下线功能
-
+    还差最后一步，没有实现强制下线
 ### 1，
-    
+    先创建一个ActivityCollector类用于管理所有的Activity，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    object ActivityCollector { 
+     
+     private val activities = ArrayList<Activity>() 
+     
+     fun addActivity(activity: Activity) { 
+     activities.add(activity) 
+     } 
+     
+     fun removeActivity(activity: Activity) { 
+     activities.remove(activity) 
+     } 
+     
+     fun finishAll() { 
+     for (activity in activities) { 
+     if (!activity.isFinishing) { 
+     activity.finish() 
+     } 
+     } 
+     activities.clear() 
+     } 
+     
+    }
     —————————————————————————————————————————————————————————————————————————————
 
+### 2，
+    然后创建BaseActivity类作为所有Activity的父类，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    open class BaseActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     ActivityCollector.addActivity(this) 
+     } 
+     
+     override fun onDestroy() { 
+     super.onDestroy() 
+     ActivityCollector.removeActivity(this) 
+     } 
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    然后编辑布局文件activity_login.xml
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <LinearLayout 
+     android:orientation="horizontal" 
+     android:layout_width="match_parent" 
+     android:layout_height="60dp"> 
+     <TextView 
+     android:layout_width="90dp" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center_vertical" 
+     android:textSize="18sp" 
+     android:text="Account:" /> 
+     
+     <EditText 
+     android:id="@+id/accountEdit" 
+     android:layout_width="0dp" 
+     android:layout_height="wrap_content" 
+     android:layout_weight="1" 
+     android:layout_gravity="center_vertical" /> 
+     </LinearLayout> 
+     
+     <LinearLayout 
+     android:orientation="horizontal" 
+     android:layout_width="match_parent" 
+     android:layout_height="60dp"> 
+     <TextView 
+     android:layout_width="90dp" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center_vertical" 
+     android:textSize="18sp" 
+     android:text="Password:" /> 
+     
+     <EditText 
+     android:id="@+id/passwordEdit" 
+     android:layout_width="0dp" 
+     android:layout_height="wrap_content" 
+     android:layout_weight="1" 
+     android:layout_gravity="center_vertical" 
+     android:inputType="textPassword" /> 
+     </LinearLayout> 
+     
+     <Button 
+     android:id="@+id/login" 
+     android:layout_width="200dp" 
+     android:layout_height="60dp" 
+     android:layout_gravity="center_horizontal" 
+     android:text="Login" /> 
+     
+    </LinearLayout> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 4，
+    接下来修改LoginActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class LoginActivity : BaseActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_login) 
+     login.setOnClickListener { 
+     val account = accountEdit.text.toString() 
+     val password = passwordEdit.text.toString() 
+     // 如果账号是admin且密码是123456，就认为登录成功 
+     if (account == "admin" && password == "123456") { 
+     val intent = Intent(this, MainActivity::class.java) 
+     startActivity(intent) 
+     finish() 
+     } else { 
+     Toast.makeText(this, "account or password is invalid", 
+     Toast.LENGTH_SHORT).show() 
+     } 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 5，
+    修改activity_main.xml中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <Button 
+     android:id="@+id/forceOffline" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Send force offline broadcast" /> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+
+### 6，
+    然后修改MainActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : BaseActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     forceOffline.setOnClickListener { 
+     val intent = Intent("com.example.broadcastbestpractice.FORCE_OFFLINE") 
+     sendBroadcast(intent) 
+     } 
+     } 
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 7，
+    修改BaseActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    open class BaseActivity : AppCompatActivity() { 
+     
+     lateinit var receiver: ForceOfflineReceiver 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     ActivityCollector.addActivity(this) 
+     } 
+     
+     override fun onResume() { 
+     super.onResume() 
+     val intentFilter = IntentFilter() 
+     intentFilter.addAction("com.example.broadcastbestpractice.FORCE_OFFLINE") 
+     receiver = ForceOfflineReceiver() 
+     registerReceiver(receiver, intentFilter) 
+     } 
+     
+     override fun onPause() { 
+     super.onPause() 
+     unregisterReceiver(receiver) 
+     } 
+     
+     override fun onDestroy() { 
+     super.onDestroy() 
+     ActivityCollector.removeActivity(this) 
+     } 
+     
+     inner class ForceOfflineReceiver : BroadcastReceiver() { 
+     
+     override fun onReceive(context: Context, intent: Intent) { 
+     AlertDialog.Builder(context).apply { 
+     setTitle("Warning") 
+     setMessage("You are forced to be offline. Please try to login again.") 
+     setCancelable(false) 
+     setPositiveButton("OK") { _, _ -> 
+     ActivityCollector.finishAll() // 销毁所有Activity 
+     val i = Intent(context, LoginActivity::class.java) 
+     context.startActivity(i) // 重新启动LoginActivity 
+     } 
+     show() 
+     } 
+     } 
+     
+     } 
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 8，
+    接下来我们还需要对AndroidManifest.xml文件进行修改
+    —————————————————————————————————————————————————————————————————————————————
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+     package="com.example.broadcastbestpractice"> 
+     <application 
+     android:allowBackup="true" 
+     android:icon="@mipmap/ic_launcher" 
+     android:label="@string/app_name" 
+     android:roundIcon="@mipmap/ic_launcher_round" 
+     android:supportsRtl="true" 
+     android:theme="@style/AppTheme"> 
+     <activity android:name=".LoginActivity"> 
+     <intent-filter> 
+     <action android:name="android.intent.action.MAIN"/> 
+     <category android:name="android.intent.category.LAUNCHER"/> 
+     </intent-filter> 
+     </activity> 
+     
+     <activity android:name=".MainActivity"> 
+     </activity> 
+     </application> 
+    </manifest> 
     —————————————————————————————————————————————————————————————————————————————
 
 # 《五》数据存储全方案，详解持久化技术
 
 ## 一，
 
-### 1，
+### 
     
     —————————————————————————————————————————————————————————————————————————————
 
     —————————————————————————————————————————————————————————————————————————————
+
 ## 
 
-### 1，
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 
+
+### 
     
     —————————————————————————————————————————————————————————————————————————————
 
