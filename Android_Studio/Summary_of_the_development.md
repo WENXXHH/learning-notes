@@ -2271,13 +2271,798 @@
 
 # 《五》数据存储全方案，详解持久化技术
 
-## 一，
+## 一，将数据存储到文件中
+
+### 1,
+    以下是一段简单的代码示例，展示了如何将一段文本内容保存到文件中：
+    —————————————————————————————————————————————————————————————————————————————
+    fun save(inputText: String) { 
+     try { 
+     val output = openFileOutput("data", Context.MODE_PRIVATE) 
+     val writer = BufferedWriter(OutputStreamWriter(output)) 
+     writer.use { 
+     it.write(inputText) 
+     } 
+     } catch (e: IOException) { 
+     e.printStackTrace() 
+     } 
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+###  2,
+    先创建一个FilePersistenceTest项目，并修改activity_main.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <EditText 
+     android:id="@+id/editText" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:hint="Type something here" 
+     /> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+
+###  3,
+    修改MainActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     } 
+     
+     override fun onDestroy() { 
+     super.onDestroy() 
+     val inputText = editText.text.toString() 
+     save(inputText) 
+     } 
+     
+     private fun save(inputText: String) { 
+     try { 
+     val output = openFileOutput("data", Context.MODE_PRIVATE) 
+     val writer = BufferedWriter(OutputStreamWriter(output)) 
+     writer.use { 
+     it.write(inputText) 
+     } 
+     } catch (e: IOException) { 
+     e.printStackTrace() 
+     } 
+     } 
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+## 二，从文件中读取数据
+
+### 1，
+    以下是一段简单的代码示例，展示了如何从文件中读取文本数据：
+    —————————————————————————————————————————————————————————————————————————————
+    fun load(): String { 
+     val content = StringBuilder()
+     try { 
+     val input = openFileInput("data") 
+     val reader = BufferedReader(InputStreamReader(input)) 
+     reader.use { 
+     reader.forEachLine { 
+     content.append(it) 
+     } 
+     } 
+     } catch (e: IOException) { 
+     e.printStackTrace() 
+     } 
+     return content.toString()
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    继续完善上一小节中的例子，使得重新启动程序时EditText中能够保留我们上次输入的内容。
+    修改MainActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val inputText = load() 
+     if (inputText.isNotEmpty()) { 
+     editText.setText(inputText) 
+     editText.setSelection(inputText.length) 
+     Toast.makeText(this, "Restoring succeeded", Toast.LENGTH_SHORT).show() 
+     } 
+     } 
+     
+     private fun load(): String { 
+     val content = StringBuilder() 
+     try { 
+     val input = openFileInput("data") 
+     val reader = BufferedReader(InputStreamReader(input)) 
+     reader.use { 
+     reader.forEachLine { 
+     content.append(it) 
+     } 
+     } 
+     } catch (e: IOException) { 
+     e.printStackTrace() 
+     } 
+     return content.toString() 
+     } 
+     ... 
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+## 三，使用SharedPreferences存储和读取数据
+
+### 1，
+    现在实现储存数据的功能
+    新建一个SharedPreferencesTest项目，然后修改activity_main.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     android:orientation="vertical" > 
+     
+     <Button 
+     android:id="@+id/saveButton" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Save Data" 
+     /> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    然后修改MainActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     saveButton.setOnClickListener { 
+     val editor = getSharedPreferences("data", Context.MODE_PRIVATE).edit() 
+     editor.putString("name", "Tom") 
+     editor.putInt("age", 28) 
+     editor.putBoolean("married", false) 
+     editor.apply() 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    再实现读取数据的功能
+    仍然是在SharedPreferencesTest项目的基础上继续开发，修改activity_main.xml中的代码：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     android:orientation="vertical" > 
+     
+     <Button 
+     android:id="@+id/saveButton" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Save Data" 
+     /> 
+     
+     <Button 
+     android:id="@+id/restoreButton" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Restore Data" 
+     /> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+
+### 4，
+    修改MainActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     ... 
+     restoreButton.setOnClickListener { 
+     val prefs = getSharedPreferences("data", Context.MODE_PRIVATE) 
+     val name = prefs.getString("name", "") 
+     val age = prefs.getInt("age", 0) 
+     val married = prefs.getBoolean("married", false) 
+     Log.d("MainActivity", "name is $name") 
+     Log.d("MainActivity", "age is $age") 
+     Log.d("MainActivity", "married is $married") 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+## 四，实现记住密码功能
+
+### 1，
+    那就首先打开BroadcastBestPractice项目，编辑一下登录界面的布局。
+    修改activity_login.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     ... 
+     
+     <LinearLayout 
+     android:orientation="horizontal" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content"> 
+     
+     <CheckBox 
+     android:id="@+id/rememberPass" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" /> 
+     
+     <TextView 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:textSize="18sp" 
+     android:text="Remember password" /> 
+     
+     </LinearLayout> 
+     
+     <Button 
+     android:id="@+id/login" 
+     android:layout_width="match_parent" 
+     android:layout_height="60dp" 
+     android:text="Login" /> 
+     
+    </LinearLayout> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    然后修改LoginActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class LoginActivity : BaseActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_login) 
+     val prefs = getPreferences(Context.MODE_PRIVATE) 
+     val isRemember = prefs.getBoolean("remember_password", false) 
+     if (isRemember) { 
+     // 将账号和密码都设置到文本框中 
+     val account = prefs.getString("account", "") 
+     val password = prefs.getString("password", "") 
+     accountEdit.setText(account) 
+     passwordEdit.setText(password) 
+     rememberPass.isChecked = true 
+     } 
+     login.setOnClickListener { 
+     val account = accountEdit.text.toString() 
+     val password = passwordEdit.text.toString() 
+     // 如果账号是admin且密码是123456，就认为登录成功 
+     if (account == "admin" && password == "123456") { 
+     val editor = prefs.edit() 
+     if (rememberPass.isChecked) { // 检查复选框是否被选中 
+     editor.putBoolean("remember_password", true) 
+     editor.putString("account", account) 
+     editor.putString("password", password) 
+     } else { 
+     editor.clear() 
+     } 
+     editor.apply() 
+     val intent = Intent(this, MainActivity::class.java) 
+     startActivity(intent) 
+     finish() 
+     } else { 
+     Toast.makeText(this, "account or password is invalid", 
+     Toast.LENGTH_SHORT).show() 
+     } 
+     } 
+     } 
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+## 五，创建数据库
+
+### 1.
+    新建MyDatabaseHelper类继承自SQLiteOpenHelper，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MyDatabaseHelper(val context: Context, name: String, version: Int) : 
+     SQLiteOpenHelper(context, name, null, version) { 
+     
+     private val createBook = "create table Book (" + 
+     " id integer primary key autoincrement," + 
+     "author text," + 
+     "price real," + 
+     "pages integer," + 
+     "name text)" 
+     
+     override fun onCreate(db: SQLiteDatabase) { 
+     db.execSQL(createBook) 
+     Toast.makeText(context, "Create succeeded", Toast.LENGTH_SHORT).show() 
+     } 
+     
+     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) { 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    现在修改activity_main.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     > 
+     
+     <Button 
+     android:id="@+id/createDatabase" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Create Database" 
+     /> 
+     
+    </LinearLayout> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    最后修改MainActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val dbHelper = MyDatabaseHelper(this, "BookStore.db", 1) 
+     createDatabase.setOnClickListener { 
+     dbHelper.writableDatabase 
+     } 
+     } 
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+## 六，升级数据库
+
+### 1，
+    目前，DatabaseTest项目中已经有一张Book表用于存放书的各种详细数据
+    接下来我们将这条建表语句添加到MyDatabaseHelper中，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MyDatabaseHelper(val context: Context, name: String, version: Int): 
+     SQLiteOpenHelper(context, name, null, version) { 
+     ... 
+     private val createCategory = "create table Category (" + 
+     "id integer primary key autoincrement," + 
+     "category_name text," + 
+     "category_code integer)" 
+     
+     override fun onCreate(db: SQLiteDatabase) { 
+     db.execSQL(createBook) 
+     db.execSQL(createCategory) 
+     Toast.makeText(context, "Create succeeded", Toast.LENGTH_SHORT).show() 
+     } 
+     
+     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) { 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    通过卸载程序的方式来新增一张表毫无疑问是很极端的做法，其实我们只需要巧妙地运
+    用SQLiteOpenHelper的升级功能，就可以很轻松地解决这个问题。修改 MyDatabaseHelper中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MyDatabaseHelper(val context: Context, name: String, version: Int): 
+     SQLiteOpenHelper(context, name, null, version) { 
+     ... 
+     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) { 
+     db.execSQL("drop table if exists Book") 
+     db.execSQL("drop table if exists Category") 
+     onCreate(db) 
+     } 
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    修改MainActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val dbHelper = MyDatabaseHelper(this, "BookStore.db", 2) 
+     createDatabase.setOnClickListener { 
+     dbHelper.writableDatabase 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+## 七，添加数据
+
+### 1，
+    向数据库的表中添加数据，继续打开上一节的项目
+    修改activity_main.xml中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     > 
+     
+     ... 
+     
+     <Button 
+     android:id="@+id/addData" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Add Data" 
+     /> 
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    接着修改MainActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val dbHelper = MyDatabaseHelper(this, "BookStore.db", 2) 
+     ... 
+     addData.setOnClickListener { 
+     val db = dbHelper.writableDatabase 
+     val values1 = ContentValues().apply { 
+     // 开始组装第一条数据 
+     put("name", "The Da Vinci Code") 
+     put("author", "Dan Brown") 
+     put("pages", 454) 
+     put("price", 16.96) 
+     } 
+     db.insert("Book", null, values1) // 插入第一条数据 
+     val values2 = ContentValues().apply { 
+     // 开始组装第二条数据 
+     put("name", "The Lost Symbol") 
+     put("author", "Dan Brown") 
+     put("pages", 510) 
+     put("price", 19.95) 
+     } 
+     db.insert("Book", null, values2) // 插入第二条数据 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+## 八，更新数据
+
+### 1，
+    我们仍然是在DatabaseTest项目的基础上修改
+    首先修改activity_main.xml中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     > 
+     
+     ... 
+     
+     <Button 
+     android:id="@+id/updateData" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Update Data" 
+     /> 
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    然后修改MainActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val dbHelper = MyDatabaseHelper(this, "BookStore.db", 2) 
+     ... 
+     updateData.setOnClickListener { 
+     val db = dbHelper.writableDatabase 
+     val values = ContentValues() 
+     values.put("price", 10.99) 
+     db.update("Book", values, "name = ?", arrayOf("The Da Vinci Code")) 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+## 九，删除数据
+
+### 1，
+    继续修改activity_main.xml中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     > 
+     
+     ... 
+     
+     <Button 
+     android:id="@+id/deleteData" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Delete Data" 
+     /> 
+    </LinearLayout> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    然后修改MainActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val dbHelper = MyDatabaseHelper(this, "BookStore.db", 2) 
+     ... 
+     deleteData.setOnClickListener { 
+     val db = dbHelper.writableDatabase 
+     db.delete("Book", "pages > ?", arrayOf("500")) 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+## 十，查询数据
+
+### 1，
+    继续修改activity_main.xml中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     > 
+     
+     ... 
+     
+     <Button 
+     android:id="@+id/queryData" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Query Data" 
+     /> 
+    </LinearLayout> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    然后修改MainActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val dbHelper = MyDatabaseHelper(this, "BookStore.db", 2) 
+     ... 
+     queryData.setOnClickListener { 
+     val db = dbHelper.writableDatabase 
+     // 查询Book表中所有的数据 
+     val cursor = db.query("Book", null, null, null, null, null, null) 
+     if (cursor.moveToFirst()) { 
+     do { 
+     // 遍历Cursor对象，取出数据并打印 
+     val name = cursor.getString(cursor.getColumnIndex("name")) 
+     val author = cursor.getString(cursor.getColumnIndex("author")) 
+     val pages = cursor.getInt(cursor.getColumnIndex("pages")) 
+     val price = cursor.getDouble(cursor.getColumnIndex("price")) 
+     Log.d("MainActivity", "book name is $name") 
+     Log.d("MainActivity", "book author is $author") 
+     Log.d("MainActivity", "book pages is $pages") 
+     Log.d("MainActivity", "book price is $price") 
+     } while (cursor.moveToNext()) 
+     } 
+     cursor.close() 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+## 十一。使用SQL操作数据库
 
 ### 
-    
+    下面我就来简略演示一下，如何直接使用SQL来完成前面几个小节中学过的CRUD操作。
+
+    添加数据：
+    db.execSQL("insert into Book (name, author, pages, price) values(?, ?, ?, ?)", 
+     arrayOf("The Da Vinci Code", "Dan Brown", "454", "16.96") 
+    ) 
+    db.execSQL("insert into Book (name, author, pages, price) values(?, ?, ?, ?)", 
+     arrayOf("The Lost Symbol", "Dan Brown", "510", "19.95") 
+    ) 
+
+    更新数据：
+    db.execSQL("update Book set price = ? where name = ?", arrayOf("10.99", "The Da Vinci Code"))
+
+    删除数据：
+    db.execSQL("delete from Book where pages > ?", arrayOf("500")) 
+
+    查询数据：
+    val cursor = db.rawQuery("select * from Book", null)
+
+## 十二，实践使用
+
+### 1，
+    修改activity_main.xml中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" 
+     android:orientation="vertical" > 
+     
+     ... 
+     
+     <Button 
+     android:id="@+id/replaceData" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Replace Data" 
+     /> 
+    </LinearLayout>
     —————————————————————————————————————————————————————————————————————————————
 
+### 2，
+    然后修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val dbHelper = MyDatabaseHelper(this, "BookStore.db", 2) 
+     ... 
+     replaceData.setOnClickListener { 
+     val db = dbHelper.writableDatabase 
+     db.beginTransaction() // 开启事务 
+     try { 
+     db.delete("Book", null, null) 
+     if (true) { 
+     // 手动抛出一个异常，让事务失败 
+     throw NullPointerException() 
+     } 
+     val values = ContentValues().apply { 
+     put("name", "Game of Thrones") 
+     put("author", "George Martin") 
+     put("pages", 720) 
+     put("price", 20.85) 
+     } 
+     db.insert("Book", null, values) 
+     db.setTransactionSuccessful() // 事务已经执行成功 
+     } catch (e: Exception) { 
+     e.printStackTrace() 
+     } finally { 
+     db.endTransaction() // 结束事务 
+     } 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+## 十三，升级数据库的最佳写法
+
+### 1，
+    MyDatabaseHelper中的代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MyDatabaseHelper(val context: Context, name: String, version: Int): 
+     SQLiteOpenHelper(context, name, null, version) { 
+     
+     private val createBook = "create table Book (" + 
+     " id integer primary key autoincrement," + 
+     "author text," + 
+     "price real," + 
+     "pages integer," + 
+     "name text)" 
+     
+     override fun onCreate(db: SQLiteDatabase) { 
+     db.execSQL(createBook) 
+     } 
+     
+     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) { 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    修改MyDatabaseHelper中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MyDatabaseHelper(val context: Context, name: String, version: Int): 
+     SQLiteOpenHelper(context, name, null, version) { 
+     
+     private val createBook = "create table Book (" + 
+     " id integer primary key autoincrement," + 
+     "author text," + 
+     "price real," + 
+     "pages integer," + 
+     "name text)" 
+     
+     private val createCategory = "create table Category (" + 
+     "id integer primary key autoincrement," + 
+     "category_name text," + 
+     "category_code integer)" 
+     
+     override fun onCreate(db: SQLiteDatabase) { 
+     db.execSQL(createBook) 
+     db.execSQL(createCategory) 
+     } 
+     
+     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) { 
+     if (oldVersion <= 1) { 
+     db.execSQL(createCategory) 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    再次修改MyDatabaseHelper中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MyDatabaseHelper(val context: Context, name: String, version: Int): 
+     SQLiteOpenHelper(context, name, null, version) { 
+     
+     private val createBook = "create table Book (" + 
+     " id integer primary key autoincrement," + 
+     "author text," + 
+     "price real," + 
+     "pages integer," + 
+     "name text," + 
+     "category_id integer)" 
+     
+     private val createCategory = "create table Category (" + 
+     "id integer primary key autoincrement," + 
+     "category_name text," + 
+     "category_code integer)" 
+     
+     override fun onCreate(db: SQLiteDatabase) { 
+     db.execSQL(createBook) 
+     db.execSQL(createCategory) 
+     } 
+     
+     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) { 
+     if (oldVersion <= 1) { 
+     db.execSQL(createCategory) 
+     } 
+     if (oldVersion <= 2) { 
+     db.execSQL("alter table Book add column category_id integer") 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+# 《六》探究 ContentProvider
 
 ## 
 
@@ -2326,3 +3111,44 @@
     —————————————————————————————————————————————————————————————————————————————
 
     —————————————————————————————————————————————————————————————————————————————
+
+## 
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+## 
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
