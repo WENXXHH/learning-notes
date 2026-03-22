@@ -35,6 +35,7 @@
 ### 1，
     先完成创建一个完整的Activity，为了让按钮可以被正常点击，可以采用使按钮处于布局的中央位置
     修改first_layout.xml，在根目录添加  android:gravity="center"
+    或者现在可以先取消标题栏，选择
     在Button按钮处修改  android:layout_width="wrap_content"
 
 ### 2，
