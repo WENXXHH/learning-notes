@@ -32,14 +32,13 @@
 
 ## 二，使用Toast
 
-### 1，
+### 1，创键button
     先完成创建一个完整的Activity，为了让按钮可以被正常点击，可以采用使按钮处于布局的中央位置
     修改first_layout.xml，在根目录添加  android:gravity="center"
-    或者现在可以先取消标题栏，选择
-    在Button按钮处修改  android:layout_width="wrap_content"
+    或者现在可以先取消标题栏，选择在Button按钮处修改  android:layout_marginTop="80dp"
 
-### 2，
-    修改onCreate（），在里面添加按钮的点击事件，通过代码补全添加以下代码
+### 2,编辑点击事件
+    修改对应Activity的onCreate（），在里面添加按钮的点击事件，通过代码补全添加以下代码
     ————————————————————————————————————————————————————————————
     val button1: Button = findViewById(R.id.button1) 
      button1.setOnClickListener { 
@@ -50,7 +49,7 @@
 
 ## 三，使用Menu菜单
 
-### 1，
+### 1，创建menu布局
     首先在res目录下新建一个menu文件夹，右击res目录→New→Directory，输入文件夹
     名“menu”，点击“OK”。接着在这个文件夹下新建一个名叫“main”的菜单文件，右击menu文
     件夹→New→Menu resource ﬁle
@@ -64,7 +63,7 @@
      android:title="Remove"/>
     ————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，引入布局
     接着回到FirstActivity中来重写onCreateOptionsMenu()方法，
     重写方法可以使用Ctrl + O 快捷键（Mac系统是control + O）
     ————————————————————————————————————————————————————————————————
@@ -74,7 +73,7 @@
         }
     ————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，编辑点击Item事件
     最后在FirstActivity中重写onOptionsItemSelected()方法
     ————————————————————————————————————————————————————————————————————
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -90,7 +89,7 @@
 
 ## 四，初步练习Intent
 
-### 1，（通用）
+### 1，（通用）创建布局
     在已经创建了一个完整的Activity的基础上，
     还是右击com.example.activitytest包→New→Activity→Empty Activity，会弹出一个创建
     Activity的对话框，这次我们命名为SecondActivity，并勾选Generate Layout File，给布局
@@ -98,7 +97,7 @@
     只是练习就可以按照first_layout的布局编写新的布局就可以了，
     注意删去SecondActivity的多余自生成部分，留下表示引入布局的部分就可以了
 
-### 2，（显式）
+### 2，（显式）点击事件触发Intent
     修改FirstAcivity文件里面的setOnClickListener（）
      ——————————————————————————————————————————————————————————
     button1.setOnClickListener { 
@@ -108,21 +107,21 @@
     ——————————————————————————————————————————————————————————
     显式到这里就算完成了
 
-### 3，（隐式）
+### 3，（隐式）添加可以响应的category
     接下来是完成隐式编写
     先完成第一步，然后打开AndroidManifest.xml，添加如下代码：
     ——————————————————————————————————————————————————————————————————————————
     <activity android:name=".SecondActivity" > 
      <intent-filter> 
      <action android:name="com.example.activitytest.ACTION_START" /> 
-     <category android:name="android.intent.category.DEFAULT" /> 
-     <category android:name="com.example.activitytest.MY_CATEGORY"/>
+     <category android:name="android.intent.category.DEFAULT" />
+     <category android:name="com.example.activitytest.MY_CATEGORY"/> //添加这行
      </intent-filter> 
     </activity>
     ——————————————————————————————————————————————————————————————————————————
     还要注意将false修改成true
 
-### 4，（隐式）
+### 4，（隐式）指定action,编辑category
      修改FirstActivity中按钮的点击事件，代码如下所示：
     ——————————————————————————————————————————————————————————
     button1.setOnClickListener { 
@@ -151,7 +150,7 @@
     后编辑third_layout.xml，只是练习就可以按照first_layout的布局编写新的布局就可以了，
     注意删去ThirdActivity的多余自生成部分，留下表示引入布局的部分就可以了
 
-### 7，（拓展）
+### 7，（拓展）验证隐式Intent的响应条件
     在AndroidManifest.xml中修改ThirdActivity的注册信息：
     ————————————————————————————————————————————————————————————    
     <activity android:name=".ThirdActivity"> 
@@ -177,18 +176,18 @@
 
 ## 五，向下一个Activity传递数据
 
-### 1，
+### 1，编辑点击事件传递数据
     创建好两个Activity之后，先编辑FirstActivity，添加以下的代码
      ————————————————————————————————————————————————————————————————
     button1.setOnClickListener { 
      val data = "Hello SecondActivity" 
      val intent = Intent(this, SecondActivity::class.java) 
-     intent.putExtra("extra_data", data) 
+     intent.putExtra("extra_data", data) //关键是这一行 
      startActivity(intent) 
     } 
     ————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，获取键值对数据
     然后在SecondActivity中将传递的数据取出，并打印出来，代码如下所示：
     ——————————————————————————————————————————————————————————————————
     class SecondActivity : AppCompatActivity() { 
@@ -196,8 +195,8 @@
      override fun onCreate(savedInstanceState: Bundle?) { 
      super.onCreate(savedInstanceState) 
      setContentView(R.layout.second_layout) 
-     val extraData = intent.getStringExtra("extra_data") 
-     Log.d("SecondActivity", "extra data is $extraData") 
+     val extraData = intent.getStringExtra("extra_data") //获取键值对
+     Log.d("SecondActivity", "extra data is $extraData") //可视化处理
      } 
      
     }
@@ -215,7 +214,8 @@
     }
     ——————————————————————————————————————————————————————
 
-### 2，SecondActivity中给按钮注册点击事件，并在点击事件中添加返回数据的逻辑
+### 2，构建Intent返回数据
+    SecondActivity中给按钮注册点击事件，并在点击事件中添加返回数据的逻辑
     ———————————————————————————————————————————————————————
     class SecondActivity : AppCompatActivity() {
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -224,7 +224,7 @@
             val button2: Button = findViewById(R.id.button2)
             button2.setOnClickListener {
                 val intent = Intent()
-                intent.putExtra("data_return", "Hello FirstActivity")
+                intent.putExtra("data_return", "Hello FirstActivity") //还是键值对
                 setResult(RESULT_OK, intent)
                 finish()
             }
@@ -233,6 +233,7 @@
     ———————————————————————————————————————————————————————
 
 ### 3，在FirstActivity中重写onActivityResult()方法
+    与之前学习的传递数据的思路类似
     ————————————————————————————————————————————————————————
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) { 
      super.onActivityResult(requestCode, resultCode, data) 
@@ -245,8 +246,10 @@
     } 
     ————————————————————————————————————————————————————————
 
-### 4，在SecondActivity的onCreate()添加onBackPressedDispatcher方法
-    为了保销毁了Activity也可以实现传递数据
+### 4，考虑”back"的情况
+    在SecondActivity的onCreate()添加onBackPressedDispatcher方法
+    代码与第二步是保持一致的
+    为了确保按下“back"销毁了Activity也可以实现传递数据
     ————————————————————————————————————————————————————————
      setContentView(R.layout.second_layout)
         onBackPressedDispatcher.addCallback(this) {
@@ -260,13 +263,13 @@
 
 ## 七，体验完整的Activity生命周期
 
-### 1，
+### 1，创建必要文件
     先创建一个新项目，允许系统自己创建Activity和布局
     再右击com.example.activitylifecycletest包→New→Activity→Empty Activity，新建
     NormalActivity，布局起名为normal_layout。然后使用同样的方式创建DialogActivity，布
     局起名为dialog_layout。
 
-### 2，
+### 2，编辑两个实验布局
     先修改normal_layout.xml,添加以下代码为例
     ——————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -298,30 +301,33 @@
     </LinearLayout>
     ——————————————————————————————————————————————————————————
 
-### 3，
+### 3，注册编辑
     修改AndroidManifest.xml的<activity>标签的配置，就是添加一行而已
     应该还记得需要将false修改成true，如下所示：
     ————————————————————————————————————————————————————————————————
     <activity android:name=".DialogActivity" 
-     android:theme="@style/Theme.AppCompat.Dialog"> 
+     android:theme="@style/Theme.AppCompat.Dialog"> //添加了这一行
     </activity> 
     <activity android:name=".NormalActivity"> 
     </activity>
     ————————————————————————————————————————————————————————————————
 
-### 4，
+### 4，编辑主布局
     接下来我们修改activity_main.xml，重新定制主Activity的布局，将里面的代码替换成如下内容：
     ————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
      android:orientation="vertical" 
      android:layout_width="match_parent" 
-     android:layout_height="match_parent"> 
+     android:layout_height="match_parent">
      
+
      <Button 
      android:id="@+id/startNormalActivity" 
      android:layout_width="match_parent" 
      android:layout_height="wrap_content" 
-     android:text="Start NormalActivity" /> 
+     android:text="Start NormalActivity" 
+     android:layout_marginTop="80dp"/> 
+    
      
      <Button 
      android:id="@+id/startDialogActivity" 
@@ -331,9 +337,8 @@
      
     </LinearLayout> 
     —————————————————————————————————————————————————————————————————————————————
-    但是可能由于是显示器的问题，第一个按键被放置在了最顶端无法被触碰
 
-### 5，
+### 5，重写各回调方法打印可视化
     最后修改MainActivity中的代码，如下所示：
     ——————————————————————————————————————————————————————————————————————————————
     class MainActivity : ComponentActivity() {
@@ -341,7 +346,7 @@
     
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-            Log.d(tag, "onCreate")
+            Log.d(tag, "onCreate") //第一个打印
             setContentView(R.layout.activity_main)
             val startNormalActivity: Button = findViewById(R.id.startNormalActivity)
             val startDialogActivity: Button = findViewById(R.id.startDialogActivity)
@@ -360,39 +365,39 @@
     
         override fun onStart() {
             super.onStart()
-            Log.d(tag, "onStart")
+            Log.d(tag, "onStart") //第二次打印
         }
     
         override fun onResume() {
             super.onResume()
-            Log.d(tag, "onResume")
+            Log.d(tag, "onResume") //3
         }
     
         override fun onPause() {
             super.onPause()
-            Log.d(tag, "onPause")
+            Log.d(tag, "onPause") //4
         }
     
         override fun onStop() {
             super.onStop()
-            Log.d(tag, "onStop")
+            Log.d(tag, "onStop") //5
         }
     
         override fun onDestroy() {
             super.onDestroy()
-            Log.d(tag, "onDestroy")
+            Log.d(tag, "onDestroy") //6
         }
     
         override fun onRestart() {
             super.onRestart()
-            Log.d(tag, "onRestart")
+            Log.d(tag, "onRestart") //7
         }
         }
     ——————————————————————————————————————————————————————————————————————————————
 
 ## 八，数据的临时保存与恢复
 
-### 1，
+### 1，重写onSaveInstanceState()
     先至少完成创造了一个完整的Activity的过程，
     在MainActivity中添加如下代码
     ————————————————————————————————————————————————————
@@ -403,7 +408,7 @@
     }
     ————————————————————————————————————————————————————
 
-### 2，
+### 2，获取保存的数据
     然后修改MainActivity的onCreate()方法，如下所示：
     —————————————————————————————————————————————————————
     override fun onCreate(savedInstanceState: Bundle?) { 
@@ -419,11 +424,11 @@
     —————————————————————————————————————————————————————
 
 ## 九，四种启动方式练习
-    等项目驱动
+    等项目驱动，平常就使用默认的standard就可以了
 
 ## 十，知晓当前是在哪一个Activity
 
-### 1，
+### 1，创建BaseActivity
     我们还是在ActivityTest项目的基础上修改，首先需要新建一个BaseActivity类。右击
     com.example.activitytest包→New→Kotlin File/Class，在弹出的窗口中输入
     BaseActivity，创建类型选择Class
@@ -433,22 +438,24 @@
      
      override fun onCreate(savedInstanceState: Bundle?) { 
      super.onCreate(savedInstanceState) 
-     Log.d("BaseActivity", javaClass.simpleName) 
+     Log.d("BaseActivity", javaClass.simpleName) //由此判断当前
      } 
      
     }
     —————————————————————————————————————————————————————————
+    将 BaseActivity作为父类 ， 这样就可以在logcat里面查看当前是属于哪一个Activity了
 
 ### 2，
     然后修改
     FirstActivity、SecondActivity和ThirdActivity的继承结构，让它们不再继承自
-    AppCompatActivity，而是继承自BaseActivity。而由于BaseActivity又是继承自
-    AppCompatActivity的，所以项目中所有Activity的现有功能并不受影响，它们仍然继承了
-    Activity中的所有特性。
+    AppCompatActivity，而是继承自BaseActivity。
+
+    而由于BaseActivity又是继承自AppCompatActivity的，
+    所以项目中所有Activity的现有功能并不受影响，它们仍然继承了Activity中的所有特性。
 
 ## 十一，随时随地退出程序
 
-### 1，
+### 1，新建一个单例类
     新建一个单例类ActivityCollector作为Activity的集合，代码如下所示：
     ————————————————————————————————————————————————————————
     object ActivityCollector { 
@@ -475,7 +482,7 @@
     } 
     ————————————————————————————————————————————————————————
 
-### 2，
+### 2，在父类中添加单例类方法
     接下来修改BaseActivity中的代码，如下所示：
     ————————————————————————————————————————————————————————
     open class BaseActivity : AppCompatActivity() { 
@@ -494,7 +501,7 @@
     }
     ————————————————————————————————————————————————————————
 
-### 3，
+### 3，使用示例
     不管你想在什么地方退出程序，只需要调用ActivityCollector.finishAll()
     方法就可以了。例如在ThirdActivity界面想通过点击按钮直接退出程序，只需将代码改成如下形式：
     ——————————————————————————————————————————————————————————
@@ -517,7 +524,7 @@
 
 ## 十二，启动Activity的最佳写法
 
-### 1，
+### 1,添加companion object
     修改SecondActivity中的代码，如下所示：
     ————————————————————————————————————————————————————————————————————
     class SecondActivity : BaseActivity() { 
@@ -533,19 +540,20 @@
     }
     —————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，上一级启动简化
     只需要一行代码就可以启动SecondActivity，如下所示：
     ————————————————————————————————————————————————————————
     button1.setOnClickListener { 
      SecondActivity.actionStart(this, "data1", "data2") 
     } 
     ————————————————————————————————————————————————————————
+    记住这是一个需要保持的良好的编程习惯就行了
 
 # 《二》UI开发的点点滴滴
 
 ## 一，使用实现接口的方式来进行注册button点击事件，并通过点击按钮获取EditText中输入的内容。
 
-### 1，
+### 1，添加EditText
     先在一个创建好的布局文件里面添加EditText控件
     ——————————————————————————————————————————————————————————
     <EditText 
@@ -557,7 +565,7 @@
      />
     ——————————————————————————————————————————————————————————
 
-### 2，
+### 2，添加获取内容的事件
     然后修改对应的Activity中的编辑button点击事件的代码
     ————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity(), View.OnClickListener { 
@@ -569,6 +577,7 @@
         button1.setOnClickListener(this)
     }
      
+     //获取EditText输入的内容
      override fun onClick(v: View?) { 
      when (v?.id) { 
      R.id.button -> { 
@@ -584,19 +593,20 @@
 
 ## 二，使用ImageView
 
-### 1,
+### 1,添加Imageview
     我们在res目录下再新建一个drawable-xxhdpi目录，然后将事先准备好的两张图片img_1.png和img_2.png复制到该目录当中。
     接下来修改activity_main.xml，添加如下代码：
     ——————————————————————————————————————————————————————————————
     <ImageView 
      android:id="@+id/imageView" 
      android:layout_width="wrap_content" 
-     android:layout_height="wrap_content" 
+     android:layout_height="200dp" 
      android:src="@drawable/img_1" 
+     android:scaleType="centerInside" //看看有没有作用
      /> 
     ——————————————————————————————————————————————————————————————
 
-### 2,
+### 2,可选动态改变图片
     如果想要动态地更改ImageView中的图片，就修改Activity的代码
     ——————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity(), View.OnClickListener { 
@@ -615,10 +625,10 @@
     }
     ——————————————————————————————————————————————————————————————
 
-## 三，使用ProgressBar
+## 三，使用ProgressBar进度条
 
-### 1，
-    先在布局中添加你想要的版本，一下是两个版本
+### 1，布局
+    先在布局中添加你想要的版本，以下是两个版本
     圆形进度条
     ————————————————————————————————————————————
     <ProgressBar 
@@ -639,7 +649,7 @@
      />
     —————————————————————————————————————————————
 
-### 2，
+### 2，点击实现消失和出现
     如果想要实现点击一下按钮让进度条消失，再点击一下按钮让进度条出现。修改Activity中的代码，如下所示：
     ——————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity(), View.OnClickListener { 
@@ -653,7 +663,7 @@
      progressBar.visibility = View.GONE 
      } else { 
      progressBar.visibility = View.VISIBLE 
-     } 
+     }                  //选择结构实现两种形态的转变
      } 
      } 
      } 
@@ -661,7 +671,7 @@
     } 
     ————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，水平进度条动态增加
     动态地更改水平进度条的进度，可以修改Activity中的代码如下所示：
     ————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity(), View.OnClickListener { 
@@ -681,7 +691,7 @@
 
 ## 四，使用AlertDialog确认框
 
-### 1，
+### 1，点击事件生成对话框
     编辑Activity中的代码
      ————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity(), View.OnClickListener { 
@@ -708,7 +718,7 @@
 
 ## 五，引入自定义的标题栏布局
     由于没有找到随书的图片资源，操作失败
-### 1，
+### 1，创建自定义布局
     这里我提前准备好了3张图片——title_bg.png、back_bg.png和edit_bg.png（资源下载地址见
     前言），分别用于作为标题栏、返回按钮和编辑按钮的背景。
     先在layout目录下创建一个title.xml布局，填写以下代码
@@ -716,7 +726,7 @@
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
      android:layout_width="match_parent" 
      android:layout_height="wrap_content" 
-     android:background="@drawable/title_bg"> 
+     //android:background="@drawable/title_bg"> 
      
      <Button
      android:id="@+id/titleBack" 
@@ -724,7 +734,7 @@
      android:layout_height="wrap_content" 
      android:layout_gravity="center" 
      android:layout_margin="5dp" 
-     android:background="@drawable/back_bg" 
+     //android:background="@drawable/back_bg" 
      android:text="Back" 
      android:textColor="#fff" /> 
      
@@ -745,7 +755,7 @@
      android:layout_height="wrap_content" 
      android:layout_gravity="center" 
      android:layout_margin="5dp" 
-     android:background="@drawable/edit_bg" 
+     //android:background="@drawable/edit_bg" 
      android:text="Edit" 
      android:textColor="#fff" /> 
      
@@ -753,19 +763,19 @@
 
     ————————————————————————————————————————————————————————————
 
-### 2，
+### 2，主布局中引入自定义
     接着修改activity_main.xml中的代码，如下所示：
     ————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
      android:layout_width="match_parent" 
      android:layout_height="match_parent" > 
      
-     <include layout="@layout/title" /> 
+     <include layout="@layout/title" /> //一句引入
      
     </LinearLayout> 
     ——————————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，可选，似乎有替代方案
     最后在MainActivity中将系统自带的标题栏隐藏掉，代码如下所示：
     ——————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -781,33 +791,34 @@
 
 ## 六，创建自定义控件
 
-### 1，
+### 1，新建TitleLayout类
     新建TitleLayout继承自LinearLayout，让它成为我们自定义的标题栏控件，代码如下所示：
     ——————————————————————————————————————————————————————————————————————————————————————————
     class TitleLayout(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) { 
      
      init { 
-     LayoutInflater.from(context).inflate(R.layout.title, this) 
+     LayoutInflater.from(context).inflate(R.layout.title, this) //还是使用上面创建的自定义标题栏
      } 
      
     }
     ————————————————————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，主布局中添加
     接下来我们需要在布局文件中添加这个自定义控件，修改activity_main.xml中的代码，如下所示：
     ——————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
      android:layout_width="match_parent" 
      android:layout_height="match_parent" > 
-     
+    
+     //添加的自定义布局，引入自定义标题栏
      <com.example.uicustomviews.TitleLayout 
      android:layout_width="match_parent" 
-     android:layout_height="wrap_content" /> 
-     
+     android:layout_height="wrap_content" />
+
     </LinearLayout> 
     ——————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，统一编辑标题栏的点击事件
     下面我们尝试为标题栏中的按钮注册点击事件，修改TitleLayout中的代码，如下所示：
      ——————————————————————————————————————————————————————————————————————————————————————————————
     class TitleLayout(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) { 
@@ -828,7 +839,7 @@
 
 ## 七，简单使用ListView
 
-### 1,
+### 1,添加ListView布局
     创建一个新项目，先修改 activity_main.xml中的代码
     ————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -843,7 +854,7 @@
     </LinearLayout>
     ——————————————————————————————————————————————————————————————————————————
 
-### 2,
+### 2,数据与适配器设置
     接下来修改MainActivity中的代码
     ———————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -863,9 +874,9 @@
     } 
     ———————————————————————————————————————————————————————————————
 
-## 八，定制ListView的界面
+## 八，定制fruit_ListView的界面（懵懂）
     缺点还是找不到合适的图片
-### 1，
+### 1，新建类
     首先需要准备好一组图片资源（资源下载地址见前言），分别对应上面提供的每一种水果，
     待会我们要让这些水果名称的旁边都有一张相应的图片。
     接着定义一个实体类，作为ListView适配器的适配类型。新建Fruit类，代码如下所示：
@@ -873,13 +884,13 @@
     class Fruit(val name:String, val imageId: Int)
     ————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，为子项指定布局
     然后需要为ListView的子项指定一个我们自定义的布局，在layout目录下新建fruit_item.xml，代码如下所示：
     ————————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
      android:layout_width="match_parent" 
      android:layout_height="60dp"> 
-     
+     //这里图片的数据找寻是一个难点
      <ImageView 
      android:id="@+id/fruitImage" 
      android:layout_width="40dp" 
@@ -897,7 +908,7 @@
     </LinearLayout> 
     ————————————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，自定义水果适配器
     接下来需要创建一个自定义的适配器，这个适配器继承自ArrayAdapter，
     并将泛型指定为 Fruit类。新建类FruitAdapter，代码如下所示：
     —————————————————————————————————————————————————————————————————————————————
@@ -919,7 +930,7 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-### 4，
+### 4，配置主Activity
     最后修改MainActivity中的代码，如下所示：
     ——————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -1010,13 +1021,13 @@
     ————————————————————————————————————————————————————————————————————————————
 
 ## 九，RecyclerView的基本用法
-
+    
 ## 十，实现横向滚动和瀑布流布局
-
+    
 ## 十一，编辑RecyclerView的点击事件
-
+    
 ## 十二，制作9-Patch图片
-
+    
 ## 十三，编写精美的聊天界面
 
 # 《三》探究Fragment
