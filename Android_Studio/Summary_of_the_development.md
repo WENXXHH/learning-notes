@@ -1021,20 +1021,495 @@
     ————————————————————————————————————————————————————————————————————————————
 
 ## 九，RecyclerView的基本用法
-    
+
+### 1，
+    打开app/build.gradle文件，在dependencies闭包中添加如下内容：
+    ——————————————————————————————————————————————————————————— 
+    implementation 'androidx.recyclerview:recyclerview:1.0.0' 
+    ———————————————————————————————————————————————————————————
+
+### 2，
+    接下来修改activity_main.xml中的代码，如下所示：
+    ———————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <androidx.recyclerview.widget.RecyclerView 
+     android:id="@+id/recyclerView" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" /> 
+     
+    </LinearLayout> 
+    ———————————————————————————————————————————————————————————
+
+### 3，
+    接下来需要为RecyclerView准备一个适配器，新建FruitAdapter类，让这个适配器继承自
+    RecyclerView.Adapter，并将泛型指定为FruitAdapter.ViewHolder。其中，
+    ViewHolder是我们在FruitAdapter中定义的一个内部类，代码如下所示：
+    ———————————————————————————————————————————————————————————
+    class FruitAdapter(val fruitList: List<Fruit>) : 
+     RecyclerView.Adapter<FruitAdapter.ViewHolder>() { 
+     
+     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) { 
+     val fruitImage: ImageView = view.findViewById(R.id.fruitImage) 
+     val fruitName: TextView = view.findViewById(R.id.fruitName) 
+     } 
+     
+     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder { 
+     val view = LayoutInflater.from(parent.context) 
+     .inflate(R.layout.fruit_item, parent, false) 
+     return ViewHolder(view) 
+     } 
+     
+     override fun onBindViewHolder(holder: ViewHolder, position: Int) { 
+     val fruit = fruitList[position] 
+     holder.fruitImage.setImageResource(fruit.imageId) 
+     holder.fruitName.text = fruit.name 
+     } 
+     
+     override fun getItemCount() = fruitList.size 
+     
+    } 
+    ———————————————————————————————————————————————————————————
+
+### 4，
+    修改MainActivity中的代码
+    ———————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     private val fruitList = ArrayList<Fruit>() 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     initFruits() // 初始化水果数据 
+     val layoutManager = LinearLayoutManager(this) 
+     recyclerView.layoutManager = layoutManager 
+     val adapter = FruitAdapter(fruitList) 
+     recyclerView.adapter = adapter 
+     } 
+     
+     private fun initFruits() { 
+     repeat(2) { 
+     fruitList.add(Fruit("Apple", R.drawable.apple_pic)) 
+     fruitList.add(Fruit("Banana", R.drawable.banana_pic)) 
+     fruitList.add(Fruit("Orange", R.drawable.orange_pic)) 
+     fruitList.add(Fruit("Watermelon", R.drawable.watermelon_pic)) 
+     fruitList.add(Fruit("Pear", R.drawable.pear_pic)) 
+     fruitList.add(Fruit("Grape", R.drawable.grape_pic)) 
+     fruitList.add(Fruit("Pineapple", R.drawable.pineapple_pic)) 
+     fruitList.add(Fruit("Strawberry", R.drawable.strawberry_pic)) 
+     fruitList.add(Fruit("Cherry", R.drawable.cherry_pic)) 
+     fruitList.add(Fruit("Mango", R.drawable.mango_pic)) 
+     } 
+     } 
+     
+    } 
+    ———————————————————————————————————————————————————————————
+
 ## 十，实现横向滚动和瀑布流布局
-    
+
+### 1，
+    在上一节的基础上修改fruit_item.xml中的代码，如下所示：
+    ———————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="80dp" 
+     android:layout_height="wrap_content"> 
+     
+     <ImageView 
+     android:id="@+id/fruitImage" 
+     android:layout_width="40dp" 
+     android:layout_height="40dp" 
+     android:layout_gravity="center_horizontal" 
+     android:layout_marginTop="10dp" /> 
+     
+     <TextView 
+     android:id="@+id/fruitName" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center_horizontal" 
+     android:layout_marginTop="10dp" /> 
+     
+    </LinearLayout>
+    ———————————————————————————————————————————————————————————
+
+### 2，
+    接下来修改MainActivity中的代码，如下所示：
+    ———————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     private val fruitList = ArrayList<Fruit>() 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     initFruits() // 初始化水果数据 
+     val layoutManager = LinearLayoutManager(this) 
+     layoutManager.orientation = LinearLayoutManager.HORIZONTAL 
+     recyclerView.layoutManager = layoutManager 
+     val adapter = FruitAdapter(fruitList) 
+     recyclerView.adapter = adapter 
+     }  
+     ... 
+    }
+    ———————————————————————————————————————————————————————————
+
+### 3，
+    里我们来实现一下效果更加炫酷的瀑布流布局
+    首先还是来修改一下fruit_item.xml中的代码，如下所示：
+    ———————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:layout_margin="5dp"> 
+     
+     <ImageView 
+     android:id="@+id/fruitImage" 
+     android:layout_width="40dp" 
+     android:layout_height="40dp" 
+     android:layout_gravity="center_horizontal" 
+     android:layout_marginTop="10dp" /> 
+     
+     <TextView 
+     android:id="@+id/fruitName" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="left" 
+     android:layout_marginTop="10dp" /> 
+     
+    </LinearLayout>
+    ———————————————————————————————————————————————————————————
+
+### 4，
+    接着修改MainActivity中的代码，如下所示：
+     ———————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     private val fruitList = ArrayList<Fruit>() 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     initFruits() // 初始化水果数据 
+     val layoutManager = StaggeredGridLayoutManager(3, 
+     StaggeredGridLayoutManager.VERTICAL) 
+     recyclerView.layoutManager = layoutManager 
+     val adapter = FruitAdapter(fruitList) 
+     recyclerView.adapter = adapter 
+     } 
+     
+     private fun initFruits() { 
+     repeat(2) {  
+     fruitList.add(Fruit(getRandomLengthString("Apple"), 
+     R.drawable.apple_pic)) 
+     fruitList.add(Fruit(getRandomLengthString("Banana"), 
+     R.drawable.banana_pic)) 
+     fruitList.add(Fruit(getRandomLengthString("Orange"), 
+     R.drawable.orange_pic)) 
+     fruitList.add(Fruit(getRandomLengthString("Watermelon"), 
+     R.drawable.watermelon_pic)) 
+     fruitList.add(Fruit(getRandomLengthString("Pear"), 
+     R.drawable.pear_pic)) 
+     fruitList.add(Fruit(getRandomLengthString("Grape"), 
+     R.drawable.grape_pic)) 
+     fruitList.add(Fruit(getRandomLengthString("Pineapple"), 
+     R.drawable.pineapple_pic)) 
+     fruitList.add(Fruit(getRandomLengthString("Strawberry"), 
+     R.drawable.strawberry_pic)) 
+     fruitList.add(Fruit(getRandomLengthString("Cherry"), 
+     R.drawable.cherry_pic)) 
+     fruitList.add(Fruit(getRandomLengthString("Mango"), 
+     R.drawable.mango_pic)) 
+     } 
+     } 
+     
+     private fun getRandomLengthString(str: String): String { 
+     val n = (1..20).random() 
+     val builder = StringBuilder() 
+     repeat(n) { 
+     builder.append(str) 
+     } 
+     return builder.toString() 
+     } 
+     
+    } 
+     ———————————————————————————————————————————————————————————
+
 ## 十一，编辑RecyclerView的点击事件
-    
-## 十二，制作9-Patch图片
-    
+    上面创建好ResyclerView的基础上
+### 1,
+    修改FruitAdapter中的代码，如下所示：
+    ———————————————————————————————————————————————————————————
+    class FruitAdapter(val fruitList: List<Fruit>) : 
+     RecyclerView.Adapter<FruitAdapter.ViewHolder>() { 
+     ... 
+     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder { 
+     val view = LayoutInflater.from(parent.context) 
+     .inflate(R.layout.fruit_item, parent, false) 
+     val viewHolder = ViewHolder(view) 
+     viewHolder.itemView.setOnClickListener { 
+     val position = viewHolder.adapterPosition 
+     val fruit = fruitList[position] 
+     Toast.makeText(parent.context, "you clicked view ${fruit.name}", 
+     Toast.LENGTH_SHORT).show() 
+     } 
+     viewHolder.fruitImage.setOnClickListener { 
+     val position = viewHolder.adapterPosition 
+     val fruit = fruitList[position] 
+     Toast.makeText(parent.context, "you clicked image ${fruit.name}", 
+     Toast.LENGTH_SHORT).show() 
+     } 
+     return viewHolder 
+     } 
+     ... 
+    }
+    ———————————————————————————————————————————————————————————
+
 ## 十三，编写精美的聊天界面
+
+### 1，制作9.Patch图片
+    先在UIBestPractice项目中放置一张气泡样式的图片message_left.png
+    我们将这张图片设置为LinearLayout的背景图片，修改activity_main.xml中的代码
+    ———————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="50dp" 
+     android:background="@drawable/message_left"> 
+    </LinearLayout> 
+    ———————————————————————————————————————————————————————————
+    但效果不好
+    此处省略详细的9.Patch图片的制作过程
+    message_left.9.png可以作为收到消息的背景图，那么毫无疑问你还需要再制作一张
+    message_right.9.png作为发出消息的背景图。制作过程是完全一样的
+    开始项目之前还需要添加依赖库
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+
+### 2，编写主布局
+    接下来开始编写主界面，修改activity_main.xml中的代码，如下所示：
+    ———————————————————————————————————————————————————————————
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#d8e0e8" >
+    
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+    
+            <EditText
+                android:id="@+id/inputText"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="@string/hint_input"
+                android:maxLines="2"
+                android:inputType="textMultiLine"
+                android:minHeight="48dp"
+                android:layout_marginBottom="80dp"/>
+    
+            <Button
+                android:id="@+id/send"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Send"
+                android:layout_marginBottom="80dp"/>
+    
+        </LinearLayout>
+    
+    </LinearLayout>
+    ———————————————————————————————————————————————————————————
+
+### 3，新建消息实体类
+    然后定义消息的实体类，新建Msg，代码如下所示：
+    ———————————————————————————————————————————————————————————
+    class Msg(val content: String, val type: Int) { 
+     companion object { 
+     const val TYPE_RECEIVED = 0 
+     const val TYPE_SENT = 1 
+     } 
+    } 
+    ———————————————————————————————————————————————————————————
+
+### 4， 左边的对话框布局
+    接下来开始编写RecyclerView的子项布局，新建msg_left_item.xml，代码如下所示：
+    ———————————————————————————————————————————————————————————
+        <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp" >
+    
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:background="@drawable/message_left"
+            android:layout_marginTop="80dp">
+    
+            <TextView
+                android:id="@+id/leftMsg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="10dp"
+                android:textColor="#fff"
+                />
+    
+        </LinearLayout>
+    
+    </FrameLayout>
+    ———————————————————————————————————————————————————————————
+
+### 5，右边的对话框布局
+    类似地，我们还需要再编写一个发送消息的子项布局，新建msg_right_item.xml，代码如下所示：
+    ———————————————————————————————————————————————————————————
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:padding="10dp" > 
+     
+     <LinearLayout 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="right" 
+     android:background="@drawable/message_right" > 
+     
+     <TextView 
+     android:id="@+id/rightMsg" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center" 
+     android:layout_margin="10dp" 
+     android:textColor="#000" /> 
+     
+     </LinearLayout> 
+     
+    </FrameLayout>
+    ———————————————————————————————————————————————————————————
+
+### 6，配置适配器
+    接下来需要创建RecyclerView的适配器类，新建类MsgAdapter，代码如下所示：
+    ———————————————————————————————————————————————————————————
+    class MsgAdapter(val msgList: List<Msg>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() { 
+     
+     inner class LeftViewHolder(view: View) : RecyclerView.ViewHolder(view) { 
+     val leftMsg: TextView = view.findViewById(R.id.leftMsg) 
+     } 
+     
+     inner class RightViewHolder(view: View) : RecyclerView.ViewHolder(view) { 
+     val rightMsg: TextView = view.findViewById(R.id.rightMsg) 
+     } 
+     
+     override fun getItemViewType(position: Int): Int { 
+     val msg = msgList[position] 
+     return msg.type 
+     } 
+     
+     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = if (viewType == 
+     Msg.TYPE_RECEIVED) { 
+     val view = LayoutInflater.from(parent.context).inflate(R.layout.msg_left_item, 
+     parent, false) 
+     LeftViewHolder(view) 
+     } else { 
+     val view = LayoutInflater.from(parent.context).inflate(R.layout.msg_right_item, 
+     parent, false) 
+     RightViewHolder(view) 
+     } 
+     
+     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) { 
+     val msg = msgList[position] 
+     when (holder) { 
+     is LeftViewHolder -> holder.leftMsg.text = msg.content 
+     is RightViewHolder -> holder.rightMsg.text = msg.content 
+     else -> throw IllegalArgumentException() 
+     } 
+     } 
+     
+     override fun getItemCount() = msgList.size 
+     
+    } 
+    ———————————————————————————————————————————————————————————
+
+### 7，编写主Activity
+    最后修改MainActivity中的代码，记得完成注册，
+    为RecyclerView初始化一些数据，并给发送按钮加入事件响应，代码如下所示：
+    ———————————————————————————————————————————————————————————
+    import android.os.Bundle
+    import android.view.View
+    import android.widget.Button
+    import android.widget.EditText
+    import androidx.appcompat.app.AppCompatActivity
+    import androidx.recyclerview.widget.LinearLayoutManager
+    import androidx.recyclerview.widget.RecyclerView
+    
+    class MainActivity : AppCompatActivity(), View.OnClickListener {
+    
+        private val msgList = ArrayList<Msg>()
+        private var adapter: MsgAdapter? = null
+    
+        // 添加 lateinit 字段
+        private lateinit var recyclerView: RecyclerView
+        private lateinit var send: Button // 这里的 'send' 现在指向 R.id.send
+        private lateinit var inputText: EditText
+    
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
+    
+            // 绑定视图
+            recyclerView = findViewById(R.id.recyclerView)
+            send = findViewById(R.id.send)
+            inputText = findViewById(R.id.inputText)
+    
+            initMsg()
+    
+            val layoutManager = LinearLayoutManager(this)
+            recyclerView.layoutManager = layoutManager
+            adapter = MsgAdapter(msgList)
+            recyclerView.adapter = adapter
+            send.setOnClickListener(this)
+        }
+    
+        override fun onClick(v: View?) {
+            when (v) {
+                send -> {
+                    val content = inputText.text.toString()
+                    if (content.isNotEmpty()) {
+                        val msg = Msg(content, Msg.TYPE_SENT)
+                        msgList.add(msg)
+                        adapter?.notifyItemInserted(msgList.size - 1)
+                        recyclerView.scrollToPosition(msgList.size - 1)
+                        inputText.setText("")
+                    }
+                }
+            }
+        }
+    
+        private fun initMsg() {
+            val msg1 = Msg("Hello guy.", Msg.TYPE_RECEIVED)
+            msgList.add(msg1)
+            val msg2 = Msg("Hello. Who is that?", Msg.TYPE_SENT)
+            msgList.add(msg2)
+            val msg3 = Msg("This is Tom. Nice talking to you. ", Msg.TYPE_RECEIVED)
+            msgList.add(msg3)
+        }
+    }
+    ———————————————————————————————————————————————————————————
 
 # 《三》探究Fragment
 
 ## 一，初步使用Fragment
 
-### 1，
+### 1，创建布局
     先尝试实现在一个Activity当中添加两个Fragment，并让这两个Fragment平分Activity的空间。
     新建一个左侧Fragment的布局left_fragment.xml，代码如下所示：
     ——————————————————————————————————————————————————————————————————————————
@@ -1072,13 +1547,11 @@
     </LinearLayout>
     ——————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，加载布局
     接着新建一个LeftFragment类，并让它继承自Fragment。注意，这里可能会有两个不同包
     下的Fragment供你选择：一个是系统内置的android.app.Fragment，一个是AndroidX库中
     的androidx.fragment.app.Fragment。这里请一定要使用AndroidX库中的Fragment。
     ——————————————————————————————————————————————————————————————————————————
-    package com.example.fifth1
-    
     import android.os.Bundle
     import android.view.LayoutInflater
     import android.view.View
@@ -1094,13 +1567,14 @@
         ): View? {
             val view = inflater.inflate(R.layout.left_fragment, container, false)
             view.findViewById<Button>(R.id.button).setOnClickListener {
-                // ✅ 确保 replaceFragment 是 public
+                // 确保 replaceFragment 是 public
                 (activity as MainActivity).replaceFragment(AnotherRightFragment())
             }
             return view
         }
     }
     ——————————————————————————————————————————————————————————————————————————
+    用来加载上面创建的布局
     
     接着我们用同样的方法再新建一个RightFragment
     ——————————————————————————————————————————————————————————————————————————
@@ -1123,7 +1597,7 @@
     }
     ——————————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，设置主activity布局
     接下来修改activity_main.xml中的代码，通过android:name属性来显式声明要添加的Fragment类名，
     注意一定要将类的包名也加上。如下所示：
     ——————————————————————————————————————————————————————————————————————————
@@ -1150,7 +1624,7 @@
     ——————————————————————————————————————————————————————————————————————————
     至此，两个Fragment平分了整个Activity的布局。
 
-### 4，
+### 4，进阶再设一个fragment布局
     继续新建another_right_fragment.xml，代码如下所示：
     ——————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -1170,7 +1644,7 @@
     </LinearLayout>
     ——————————————————————————————————————————————————————————————————————————
 
-### 5，
+### 5，同理加载布局
     然后新建AnotherRightFragment作为另一个右侧Fragment，代码如下所示：
     ——————————————————————————————————————————————————————————————————————————
     package com.example.fifth1
@@ -1192,7 +1666,7 @@
     }
     ——————————————————————————————————————————————————————————————————————————
 
-### 6，
+### 6，修改主布局
     接下来看一下将它动态地添加到Activity当中。修改activity_main.xml，代码如下所示：
     ——————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -1207,7 +1681,7 @@
      android:layout_height="match_parent" 
      android:layout_weight="1" /> 
      
-     <FrameLayout 
+     <FrameLayout //关键变化
      android:id="@+id/rightLayout" 
      android:layout_width="0dp" 
      android:layout_height="match_parent" 
@@ -1217,7 +1691,7 @@
     </LinearLayout> 
     ——————————————————————————————————————————————————————————————————————————
 
-### 7，
+### 7，添加replaceFragment（）
     下面我们将在代码中向FrameLayout里添加内容，从而实现动态添加Fragment的功能。
     修改MainActivity中的代码，如下所示：
     ——————————————————————————————————————————————————————————————————————————
@@ -1240,12 +1714,10 @@
     ——————————————————————————————————————————————————————————————————————————
     这样就成功实现了向Activity中动态添加Fragment的功能。
 
-### 8，
+### 8，fragment实现返回栈
     想要实现类似于返回栈的效果，按下Back键可以回到上一个Fragment
     修改MainActivity中的代码，如下所示：
     ——————————————————————————————————————————————————————————————————————————
-    package com.example.fifth1
-
     import android.os.Bundle
     import androidx.appcompat.app.AppCompatActivity
     import androidx.fragment.app.Fragment
@@ -1291,6 +1763,7 @@
     是一个Context对象。
 
 ### 10，（体验Fragment的生命周期）
+    类似Activity的生命周期？暂时还没有能记住，以后需要使用再做回顾吧
     在上一节的基础上，修改RightFragment中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
     class RightFragment : Fragment() { 
@@ -1360,7 +1833,7 @@
 
 ## 二，动态选择加载布局
 
-### 1，
+### 1，主布局只保留一个fragment
     想要实现不同的设备切换加载单页模式还是双页模式，
     修改FragmentTest项目中的activity_main.xml文件，代码如下所示：
     —————————————————————————————————————————————————————————————————————————————
@@ -1379,7 +1852,7 @@
     —————————————————————————————————————————————————————————————————————————————
     如果是在上一节的基础上来继续写的，记得要删掉多余的代码，不然会报错
 
-### 2，
+### 2，设置大屏幕的布局
     接着在res目录下新建layout-large文件夹，在这个文件夹下新建一个布局，也叫作activity_main.xml
     —————————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -1405,8 +1878,9 @@
     —————————————————————————————————————————————————————————————————————————————
     然后将MainActivity中replaceFragment()方法里的代码注释掉，并在平板模拟器上重新运行程序
     就实现了在手机和平板上加载不同界面的效果
+    这里的原理是large是一个限定符， 当被认定是大屏时就会选择加载大的
 
-### 3，
+### 3，最小宽度限制
     如果想要使用最小宽度限定符，
     在res目录下新建layout-sw600dp文件夹，然后在这个文件夹下新建activity_main.xml布局，
     —————————————————————————————————————————————————————————————————————————————
@@ -1517,6 +1991,7 @@
             container: ViewGroup?,
             savedInstanceState: Bundle?
         ): View? {
+            //加载刚刚创建的布局
             return inflater.inflate(R.layout.news_content_frag, container, false)
         }
     
