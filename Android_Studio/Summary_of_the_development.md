@@ -2258,7 +2258,7 @@
 
 ## 一，动态注册监听时间变化
 
-### 
+### 动态注册
     新建一个BroadcastTest项目，然后修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -2269,20 +2269,20 @@
      super.onCreate(savedInstanceState) 
      setContentView(R.layout.activity_main) 
      val intentFilter = IntentFilter() 
-     intentFilter.addAction("android.intent.action.TIME_TICK") 
+     intentFilter.addAction("android.intent.action.TIME_TICK") //指定想要接的广播
      timeChangeReceiver = TimeChangeReceiver() 
-     registerReceiver(timeChangeReceiver, intentFilter) 
-     } 
-     
+     registerReceiver(timeChangeReceiver, intentFilter) //传入两个实例
+        } 
+      
      override fun onDestroy() { 
      super.onDestroy() 
-     unregisterReceiver(timeChangeReceiver) 
+     unregisterReceiver(timeChangeReceiver) //动态注册要取消注册
      } 
      
      inner class TimeChangeReceiver : BroadcastReceiver() { 
      
      override fun onReceive(context: Context, intent: Intent) { 
-     Toast.makeText(context, "Time has changed", Toast.LENGTH_SHORT).show() 
+     Toast.makeText(context, "Time has changed", Toast.LENGTH_SHORT).show() //显示时间变化
      } 
      
      } 
@@ -2292,7 +2292,7 @@
 
 ## 二，静态注册实现开机启动
     模拟器运行时竟然失败了，ohno
-### 1，
+### 1，重写显示化
     上一小节中我们是使用内部类的方式创建的BroadcastReceiver，其实还可以通过Android Studio
     提供的快捷方式来创建。右击com.example.broadcasttest包→New→Other→Broadcast Receiver
     这里我们将创建的类命名为BootCompleteReceiver，Exported属性表示是否允
@@ -2302,13 +2302,13 @@
     class BootCompleteReceiver : BroadcastReceiver() { 
      
      override fun onReceive(context: Context, intent: Intent) { 
-     Toast.makeText(context, "Boot Complete", Toast.LENGTH_LONG).show() 
+     Toast.makeText(context, "Boot Complete", Toast.LENGTH_LONG).show() //简单的Toast
      } 
      
     }
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，静态注册
     对AndroidManifest.xml文件进行修改
     —————————————————————————————————————————————————————————————————————————————
     <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -2339,21 +2339,21 @@
 
 ## 三，发送标准广播
 
-### 1，
+### 1，创建Receiver
     新建一个MyBroadcastReceiver，并在onReceive()方法中加入如下代码：
     —————————————————————————————————————————————————————————————————————————————
     class MyBroadcastReceiver : BroadcastReceiver() { 
      
      override fun onReceive(context: Context, intent: Intent) { 
-     Toast.makeText(context, "received in MyBroadcastReceiver", 
+     Toast.makeText(context, "received in MyBroadcastReceiver", //简单的发送Toast
      Toast.LENGTH_SHORT).show() 
      } 
      
     } 
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
-    然后在AndroidManifest.xml中对这个BroadcastReceiver进行修改：
+### 2，注册声明广播的内容
+    然后在AndroidManifest.xml中对这个BroadcastReceiver进行修改,声明广播的内容：
     —————————————————————————————————————————————————————————————————————————————
     <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
      package="com.example.broadcasttest"> 
@@ -2378,7 +2378,7 @@
     </manifest>
     —————————————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，编辑点击布局
     接下来修改activity_main.xml中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -2396,7 +2396,7 @@
     </LinearLayout> 
     —————————————————————————————————————————————————————————————————————————————
 
-### 4，
+### 4，编辑点击发送事件
     然后修改MainActivity中的代码，添加按钮的点击事件如下所示：
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -2407,7 +2407,7 @@
      button.setOnClickListener { 
      val intent = Intent("com.example.broadcasttest.MY_BROADCAST") 
      intent.setPackage(packageName) 
-     sendBroadcast(intent) 
+     sendBroadcast(intent) //使用Intent发送，将隐式变成显示广播才能发送
      } 
      ... 
      } 
@@ -2416,8 +2416,8 @@
     —————————————————————————————————————————————————————————————————————————————
 
 ## 四，发送有序广播
-
-### 1，
+    在上面一节的基础上
+### 1，再创建一个Receiver
     创建一个新的BroadcastReceiver。新建AnotherBroadcastReceiver，代码如下所示：
     —————————————————————————————————————————————————————————————————————————————
     class AnotherBroadcastReceiver : BroadcastReceiver() { 
@@ -2430,7 +2430,7 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，注册接收信息
     然后在AndroidManifest.xml中对这个BroadcastReceiver的配置进行修改，代码如下所示：
     —————————————————————————————————————————————————————————————————————————————
     <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -2456,7 +2456,7 @@
     </manifest> 
     —————————————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，添加sendOrderedBroadcast(intent, null) 
     重新回到BroadcastTest项目，然后修改MainActivity中的点击按钮事件的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -2467,7 +2467,7 @@
      button.setOnClickListener { 
      val intent = Intent("com.example.broadcasttest.MY_BROADCAST") 
      intent.setPackage(packageName) 
-     sendOrderedBroadcast(intent, null) 
+     sendOrderedBroadcast(intent, null) //唯一改变
      } 
      ... 
      } 
@@ -2475,7 +2475,7 @@
     } 
     —————————————————————————————————————————————————————————————————————————————
 
-### 4，
+### 4，注册设置优先性
     设定BroadcastReceiver的先后顺序，修改AndroidManifest.xml中的代码
     —————————————————————————————————————————————————————————————————————————————
     <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -2502,7 +2502,7 @@
     </manifest> 
     —————————————————————————————————————————————————————————————————————————————
 
-### 5，
+### 5，设置截断广播的方法
     选择是否允许广播继续传递了。修改MyBroadcastReceiver中的代码
     —————————————————————————————————————————————————————————————————————————————
     class MyBroadcastReceiver : BroadcastReceiver() { 
@@ -2517,7 +2517,7 @@
     —————————————————————————————————————————————————————————————————————————————
 
 ## 五，实现强制下线功能
-    还差最后一步，没有实现强制下线
+    缺少实践机会，下次吧，先找时间学好后面的内容先
 ### 1，
     先创建一个ActivityCollector类用于管理所有的Activity，代码如下所示：
     —————————————————————————————————————————————————————————————————————————————
@@ -2533,14 +2533,15 @@
      activities.remove(activity) 
      } 
      
-     fun finishAll() { 
-     for (activity in activities) { 
-     if (!activity.isFinishing) { 
-     activity.finish() 
-     } 
-     } 
-     activities.clear() 
-     } 
+    fun finishAll() {
+        val copy = ArrayList(activities) // 创建副本
+        for (activity in copy) {
+            if (!activity.isFinishing) {
+                activity.finish()
+            }
+        }
+        activities.clear()
+    }
      
     }
     —————————————————————————————————————————————————————————————————————————————
@@ -2666,18 +2667,16 @@
 ### 6，
     然后修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
-    class MainActivity : BaseActivity() { 
-     
-     override fun onCreate(savedInstanceState: Bundle?) { 
-     super.onCreate(savedInstanceState) 
-     setContentView(R.layout.activity_main) 
-     forceOffline.setOnClickListener { 
-     val intent = Intent("com.example.broadcastbestpractice.FORCE_OFFLINE") 
-     sendBroadcast(intent) 
-     } 
-     } 
-     
-    } 
+    class MainActivity : BaseActivity() {
+    override fun onResume() {
+        super.onResume()
+        // 关键修复：将按钮点击事件注册移到 onResume() 中
+        forceOffline.setOnClickListener {
+            val intent = Intent("com.example.broadcastbestpractice.FORCE_OFFLINE")
+            sendBroadcast(intent)
+        }
+     }
+    }
     —————————————————————————————————————————————————————————————————————————————
 
 ### 7，
@@ -2713,6 +2712,7 @@
      inner class ForceOfflineReceiver : BroadcastReceiver() { 
      
      override fun onReceive(context: Context, intent: Intent) { 
+     Log.d("ForceOffline", "Broadcast received!") // 添加日志
      AlertDialog.Builder(context).apply { 
      setTitle("Warning") 
      setMessage("You are forced to be offline. Please try to login again.") 
@@ -2760,12 +2760,12 @@
 
 ## 一，将数据存储到文件中
 
-### 1,
-    以下是一段简单的代码示例，展示了如何将一段文本内容保存到文件中：
+### 1,编写save函数示例
+    以下是一段简单的代码示例，展示了如何将一段文本内容保存到文件中，通用模板:
     —————————————————————————————————————————————————————————————————————————————
     fun save(inputText: String) { 
      try { 
-     val output = openFileOutput("data", Context.MODE_PRIVATE) 
+     val output = openFileOutput("data", Context.MODE_PRIVATE) //获取FileOutputSream对象
      val writer = BufferedWriter(OutputStreamWriter(output)) 
      writer.use { 
      it.write(inputText) 
@@ -2773,10 +2773,10 @@
      } catch (e: IOException) { 
      e.printStackTrace() 
      } 
-    } 
+    } //比较像java流，看不懂就去记忆
     —————————————————————————————————————————————————————————————————————————————
 
-###  2,
+### 2,添加EditText
     先创建一个FilePersistenceTest项目，并修改activity_main.xml中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -2794,7 +2794,7 @@
     </LinearLayout>
     —————————————————————————————————————————————————————————————————————————————
 
-###  3,
+### 3,调用示例
     修改MainActivity中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -2806,10 +2806,11 @@
      
      override fun onDestroy() { 
      super.onDestroy() 
-     val inputText = editText.text.toString() 
-     save(inputText) 
+     val inputText = editText.text.toString() //获取输入字符串内容
+     save(inputText) //调用save
      } 
      
+     //编写save函数
      private fun save(inputText: String) { 
      try { 
      val output = openFileOutput("data", Context.MODE_PRIVATE) 
@@ -2823,10 +2824,18 @@
      } 
     } 
     —————————————————————————————————————————————————————————————————————————————
+    验证：
+    我们可以借助Device File Explorer工具查看一下。这个工具在Android
+    Studio的右侧边栏当中，通常是在右下角的位置，如果你的右侧边栏中没有这个工具的话，也
+    可以使用快捷键Ctrl + Shift + A（Mac系统是command + shift + A）打开搜索功能，在搜
+    索框中输入“Device File Explorer”即可找到这个工具。
+    这个工具其实就相当于一个设备文件浏览器，我们在这里找
+    到/data/data/com.example.ﬁlepersistencetest/ﬁles/目录，可以看到，现在已经生成了一
+    个data文件
 
 ## 二，从文件中读取数据
-
-### 1，
+    继续上一小节的代码
+### 1，编写load函数               
     以下是一段简单的代码示例，展示了如何从文件中读取文本数据：
     —————————————————————————————————————————————————————————————————————————————
     fun load(): String { 
@@ -2842,10 +2851,10 @@
      } catch (e: IOException) { 
      e.printStackTrace() 
      } 
-     return content.toString()
+     return content.toString() //暂时死记吧
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，使用示例
     继续完善上一小节中的例子，使得重新启动程序时EditText中能够保留我们上次输入的内容。
     修改MainActivity中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
@@ -2854,6 +2863,7 @@
      override fun onCreate(savedInstanceState: Bundle?) { 
      super.onCreate(savedInstanceState) 
      setContentView(R.layout.activity_main) 
+     //调用load函数
      val inputText = load() 
      if (inputText.isNotEmpty()) { 
      editText.setText(inputText) 
@@ -2881,9 +2891,9 @@
     } 
     —————————————————————————————————————————————————————————————————————————————
 
-## 三，使用SharedPreferences存储和读取数据
+## 三，SharedPreferences存储和读取数据
 
-### 1，
+### 1，添加保存按钮
     现在实现储存数据的功能
     新建一个SharedPreferencesTest项目，然后修改activity_main.xml中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
@@ -2902,7 +2912,7 @@
     </LinearLayout>
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，编辑保存事件
     然后修改MainActivity中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -2922,7 +2932,7 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，添加读取按钮
     再实现读取数据的功能
     仍然是在SharedPreferencesTest项目的基础上继续开发，修改activity_main.xml中的代码：
     —————————————————————————————————————————————————————————————————————————————
@@ -2948,7 +2958,7 @@
     </LinearLayout>
     —————————————————————————————————————————————————————————————————————————————
 
-### 4，
+### 4，编辑读取事件
     修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -2971,9 +2981,10 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-## 四，实现记住密码功能
+## 四，SharedPreferences实现记住密码功能
 
-### 1，
+### 1，添加复选框按键
+    复用上一章的最佳实践的登录界面的代码
     那就首先打开BroadcastBestPractice项目，编辑一下登录界面的布局。
     修改activity_login.xml中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
@@ -3011,7 +3022,7 @@
     </LinearLayout> 
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，添加记住密码的逻辑
     然后修改LoginActivity中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
     class LoginActivity : BaseActivity() { 
@@ -3055,15 +3066,17 @@
      
     } 
     —————————————————————————————————————————————————————————————————————————————
+    这里只是一个简单的例子，实际项目中不会这样使用，但是里面的条件判断逻辑有点难度
 
 ## 五，创建数据库
 
-### 1.
+### 1.创建自己的数据库类
     新建MyDatabaseHelper类继承自SQLiteOpenHelper，代码如下所示：
     —————————————————————————————————————————————————————————————————————————————
     class MyDatabaseHelper(val context: Context, name: String, version: Int) : 
      SQLiteOpenHelper(context, name, null, version) { 
      
+    //看不懂就去补全SQL知识
      private val createBook = "create table Book (" + 
      " id integer primary key autoincrement," + 
      "author text," + 
@@ -3082,7 +3095,7 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，创建点击按钮
     现在修改activity_main.xml中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -3101,7 +3114,7 @@
     </LinearLayout> 
     —————————————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，编辑创建事件
     最后修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -3117,10 +3130,11 @@
      
     } 
     —————————————————————————————————————————————————————————————————————————————
+    证明成功创建的方法可见书本的详细内容
 
 ## 六，升级数据库
-
-### 1，
+    上一节的代码延续
+### 1，添加创建逻辑，但还是没有成功
     目前，DatabaseTest项目中已经有一张Book表用于存放书的各种详细数据
     接下来我们将这条建表语句添加到MyDatabaseHelper中，代码如下所示：
     —————————————————————————————————————————————————————————————————————————————
@@ -3144,7 +3158,7 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，修改更新函数
     通过卸载程序的方式来新增一张表毫无疑问是很极端的做法，其实我们只需要巧妙地运
     用SQLiteOpenHelper的升级功能，就可以很轻松地解决这个问题。修改 MyDatabaseHelper中的代码
     —————————————————————————————————————————————————————————————————————————————
@@ -3160,7 +3174,7 @@
     } 
     —————————————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，增加版本信息
     修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -3168,7 +3182,7 @@
      override fun onCreate(savedInstanceState: Bundle?) { 
      super.onCreate(savedInstanceState) 
      setContentView(R.layout.activity_main) 
-     val dbHelper = MyDatabaseHelper(this, "BookStore.db", 2) 
+     val dbHelper = MyDatabaseHelper(this, "BookStore.db", 2) //高版本会触发更新函数的启动
      createDatabase.setOnClickListener { 
      dbHelper.writableDatabase 
      } 
@@ -3177,9 +3191,9 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-## 七，添加数据
+## 七，数据操作CRUD
 
-### 1，
+### 1，添加按钮
     向数据库的表中添加数据，继续打开上一节的项目
     修改activity_main.xml中的代码
     —————————————————————————————————————————————————————————————————————————————
@@ -3200,7 +3214,7 @@
     </LinearLayout>
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，添加示例
     接着修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -3234,9 +3248,7 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-## 八，更新数据
-
-### 1，
+### 3,更新按钮
     我们仍然是在DatabaseTest项目的基础上修改
     首先修改activity_main.xml中的代码
     —————————————————————————————————————————————————————————————————————————————
@@ -3257,7 +3269,7 @@
     </LinearLayout>
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 4，更新示例
     然后修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -3278,9 +3290,7 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-## 九，删除数据
-
-### 1，
+### 5，删除按钮
     继续修改activity_main.xml中的代码
     —————————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -3300,7 +3310,7 @@
     </LinearLayout> 
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 6，删除示例
     然后修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -3319,9 +3329,7 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-## 十，查询数据
-
-### 1，
+### 7，查询按钮
     继续修改activity_main.xml中的代码
     —————————————————————————————————————————————————————————————————————————————
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -3341,7 +3349,7 @@
     </LinearLayout> 
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 8，查询示例
     然后修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -3375,9 +3383,9 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-## 十一。使用SQL操作数据库
+## 八，使用SQL操作数据库
 
-### 
+### 可替换前面的方法使用
     下面我就来简略演示一下，如何直接使用SQL来完成前面几个小节中学过的CRUD操作。
 
     添加数据：
@@ -3397,7 +3405,7 @@
     查询数据：
     val cursor = db.rawQuery("select * from Book", null)
 
-## 十二，实践使用
+## 九，实践使用
 
 ### 1，
     修改activity_main.xml中的代码
@@ -3456,7 +3464,7 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-## 十三，升级数据库的最佳写法
+## 十，升级数据库的最佳写法
 
 ### 1，
     MyDatabaseHelper中的代码如下所示：
