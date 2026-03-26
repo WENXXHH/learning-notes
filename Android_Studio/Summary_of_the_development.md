@@ -3559,6 +3559,742 @@
 
 # 《六》探究 ContentProvider
 
+## 一，在程序运行时申请权限
+
+### 1，
+    首先新建一个RuntimePermissionTest项目
+    使用CALL_PHONE这个权限来作为本小节的示例
+    修改activity_main.xml布局文件
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <Button 
+     android:id="@+id/makeCall" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Make Call" /> 
+     
+    </LinearLayout> 
+     —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    接着修改MainActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     makeCall.setOnClickListener { 
+     try { 
+     val intent = Intent(Intent.ACTION_CALL) 
+     intent.data = Uri.parse("tel:10086") 
+     startActivity(intent) 
+     } catch (e: SecurityException) { 
+     e.printStackTrace() 
+     } 
+     } 
+     }  
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    接下来修改AndroidManifest.xml文件，在其中声明如下权限：
+    —————————————————————————————————————————————————————————————————————————————
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+     package="com.example.runtimepermissiontest"> 
+     
+     <uses-permission android:name="android.permission.CALL_PHONE" /> 
+     
+     <application 
+     android:allowBackup="true" 
+     android:icon="@mipmap/ic_launcher" 
+     android:label="@string/app_name" 
+     android:roundIcon="@mipmap/ic_launcher_round" 
+     android:supportsRtl="true" 
+     android:theme="@style/AppTheme"> 
+     ... 
+     </application> 
+     
+    </manifest> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 4，
+    使用危险权限时必须进行运行时权限处理。
+    那么下面我们就来尝试修复这个问题，修改MainActivity中的代码，
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main)  
+     makeCall.setOnClickListener { 
+     if (ContextCompat.checkSelfPermission(this, 
+     Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) { 
+     ActivityCompat.requestPermissions(this, 
+     arrayOf(Manifest.permission.CALL_PHONE), 1) 
+     } else { 
+     call() 
+     } 
+     } 
+     } 
+     
+     override fun onRequestPermissionsResult(requestCode: Int, 
+     permissions: Array<String>, grantResults: IntArray) { 
+     super.onRequestPermissionsResult(requestCode, permissions, grantResults) 
+     when (requestCode) { 
+     1 -> { 
+     if (grantResults.isNotEmpty() && 
+     grantResults[0] == PackageManager.PERMISSION_GRANTED) { 
+     call() 
+     } else { 
+     Toast.makeText(this, "You denied the permission", 
+     Toast.LENGTH_SHORT).show() 
+     } 
+     } 
+     } 
+     } 
+     
+     private fun call() { 
+     try { 
+     val intent = Intent(Intent.ACTION_CALL) 
+     intent.data = Uri.parse("tel:10086") 
+     startActivity(intent) 
+     } catch (e: SecurityException) { 
+     e.printStackTrace() 
+     } 
+     } 
+     
+    } 
+     —————————————————————————————————————————————————————————————————————————————
+
+## 二， ContentProvider读取系统联系人
+
+### 1，
+    打开通讯录程序通过点击“Create new contact”创建联系人。
+    这里就先创建两个联系人吧，分别填入他们的姓名和手机号。
+    现在新建一个ContactsTest项目
+    首先还是来编写一下布局文件，这里我们希望读取出来的联系人信息能够在ListView中显示，
+    因此，修改activity_main.xml中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <ListView 
+     android:id="@+id/contactsView" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     </ListView> 
+     
+    </LinearLayout> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    接着修改MainActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() {
+     private val contactsList = ArrayList<String>() 
+     private lateinit var adapter: ArrayAdapter<String> 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, contactsList) 
+     contactsView.adapter = adapter 
+     if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) 
+     != PackageManager.PERMISSION_GRANTED) { 
+     ActivityCompat.requestPermissions(this, 
+     arrayOf(Manifest.permission.READ_CONTACTS), 1) 
+     } else { 
+     readContacts() 
+     } 
+     } 
+     
+     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, 
+     grantResults: IntArray) { 
+     super.onRequestPermissionsResult(requestCode, permissions, grantResults) 
+     when (requestCode) { 
+     1 -> { 
+     if (grantResults.isNotEmpty() 
+     && grantResults[0] == PackageManager.PERMISSION_GRANTED) { 
+     readContacts() 
+     } else { 
+     Toast.makeText(this, "You denied the permission", 
+     Toast.LENGTH_SHORT).show() 
+     } 
+     } 
+     } 
+     } 
+     
+     private fun readContacts() { 
+     // 查询联系人数据 
+     contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, 
+     null, null, null, null)?.apply { 
+     while (moveToNext()) { 
+     // 获取联系人姓名 
+     val displayName = getString(getColumnIndex( 
+     ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)) 
+     // 获取联系人手机号 
+     val number = getString(getColumnIndex( 
+     ContactsContract.CommonDataKinds.Phone.NUMBER)) 
+     contactsList.add("$displayName\n$number") 
+     } 
+     adapter.notifyDataSetChanged() 
+     close() 
+     } 
+     } 
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    修改AndroidManifest.xml中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+     package="com.example.contactstest"> 
+     
+     <uses-permission android:name="android.permission.READ_CONTACTS" /> 
+     ... 
+    </manifest> 
+    —————————————————————————————————————————————————————————————————————————————
+
+## 三，创建ContentProvider的步骤
+
+### 1，
+    想要实现跨程序共享数据的功能，可以通过新建一个类去继承ContentProvider的方式来实现。
+    ContentProvider类中有6个抽象方法，我们在使用子类继承它的时候，
+    需要将这6个方法全部重写。观察下面的代码示例：
+    —————————————————————————————————————————————————————————————————————————————
+    class MyProvider : ContentProvider() { 
+     
+     override fun onCreate(): Boolean { 
+     return false 
+     } 
+     
+     override fun query(uri: Uri, projection: Array<String>?, selection: String?, 
+     selectionArgs: Array<String>?, sortOrder: String?): Cursor? { 
+     return null 
+     } 
+     
+     override fun insert(uri: Uri, values: ContentValues?): Uri? { 
+     return null 
+     } 
+     
+     override fun update(uri: Uri, values: ContentValues?, selection: String?, 
+     selectionArgs: Array<String>?): Int { 
+     return 0 
+     } 
+     
+     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<String>?): Int { 
+     return 0 
+     } 
+     
+     override fun getType(uri: Uri): String? { 
+     return null 
+     } 
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+
+    回顾一下，一个标准的内容URI写法是：
+    content://com.example.app.provider/table1 
+    这就表示调用方期望访问的是com.example.app这个应用的table1表中的数据。
+
+    除此之外，我们还可以在这个内容URI的后面加上一个id，例如：
+    content://com.example.app.provider/table1/1 
+
+    所以，一个能够匹配任意表的内容URI格式就可以写成：
+    content://com.example.app.provider/* 
+
+    一个能够匹配table1表中任意一行数据的内容URI格式就可以写成：
+    content://com.example.app.provider/table1/# 
+
+### 3，
+    修改MyProvider中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MyProvider : ContentProvider() { 
+     
+     private val table1Dir = 0 
+     private val table1Item = 1 
+     private val table2Dir = 2 
+     private val table2Item = 3 
+     
+     private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH) 
+     
+     init { 
+     uriMatcher.addURI("com.example.app.provider", "table1", table1Dir) 
+     uriMatcher.addURI("com.example.app.provider ", "table1/#", table1Item) 
+     uriMatcher.addURI("com.example.app.provider ", "table2", table2Dir) 
+     uriMatcher.addURI("com.example.app.provider ", "table2/#", table2Item) 
+     } 
+     ... 
+     override fun query(uri: Uri, projection: Array<String>?, selection: String?, 
+     selectionArgs: Array<String>?, sortOrder: String?): Cursor? { 
+     when (uriMatcher.match(uri)) { 
+     table1Dir -> { 
+     // 查询table1表中的所有数据 
+     } 
+     table1Item -> { 
+     // 查询table1表中的单条数据 
+     } 
+     table2Dir -> { 
+     // 查询table2表中的所有数据 
+     } 
+     table2Item -> { 
+     // 查询table2表中的单条数据 
+     } 
+     } 
+     ... 
+     } 
+     ... 
+    } 
+     —————————————————————————————————————————————————————————————————————————————
+
+### 4，
+    
+    所以，对于content://com.example.app.provider/table1这个内容URI，它所对应的MIME类
+    型就可以写成：
+    vnd.android.cursor.dir/vnd.com.example.app.provider.table1 
+
+    对于content://com.example.app.provider/table1/1这个内容URI，它所对应的MIME类型就
+    可以写成：
+    vnd.android.cursor.item/vnd.com.example.app.provider.table1 
+
+### 5，
+    现在我们可以继续完善MyProvider中的内容了，这次来实现getType()方法中的逻辑
+    ————————————————————————————————————————————————————————————————————————————
+    class MyProvider : ContentProvider() { 
+     ... 
+     override fun getType(uri: Uri) = when (uriMatcher.match(uri)) { 
+     table1Dir -> "vnd.android.cursor.dir/vnd.com.example.app.provider.table1" 
+     table1Item -> "vnd.android.cursor.item/vnd.com.example.app.provider.table1" 
+     table2Dir -> "vnd.android.cursor.dir/vnd.com.example.app.provider.table2" 
+     table2Item -> "vnd.android.cursor.item/vnd.com.example.app.provider.table2" 
+     else -> null 
+     } 
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+## 四，实现跨程序数据共享
+
+### 1，
+    在上一章中DatabaseTest项目的基础上继续开发，通过ContentProvider
+    来给它加入外部访问接口。打开DatabaseTest项目，首先将MyDatabaseHelper中使用Toast
+    弹出创建数据库成功的提示去除，因为跨程序访问时我们不能直接使用Toast。然后创建一个
+    ContentProvider，右击com.example.databasetest包→New→Other→Content
+    Provider，可以看到，我们将ContentProvider命名为DatabaseProvider，将authority指定为
+    com.example.databasetest.provider，Exported属性表示是否允许外部程序访问我们
+    的ContentProvider，Enabled属性表示是否启用这个ContentProvider。将两个属性都勾
+    中，点击“Finish”完成创建。
+    接着我们修改DatabaseProvider中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class DatabaseProvider : ContentProvider() { 
+     
+     private val bookDir = 0 
+     private val bookItem = 1 
+     private val categoryDir = 2 
+     private val categoryItem = 3 
+     private val authority = "com.example.databasetest.provider" 
+     private var dbHelper: MyDatabaseHelper? = null 
+     
+     private val uriMatcher by lazy { 
+     val matcher = UriMatcher(UriMatcher.NO_MATCH) 
+     matcher.addURI(authority, "book", bookDir) 
+     matcher.addURI(authority, "book/#", bookItem) 
+     matcher.addURI(authority, "category", categoryDir) 
+     matcher.addURI(authority, "category/#", categoryItem) 
+     matcher 
+     } 
+     
+     override fun onCreate() = context?.let { 
+     dbHelper = MyDatabaseHelper(it, "BookStore.db", 2) 
+     true 
+     } ?: false  
+     
+     override fun query(uri: Uri, projection: Array<String>?, selection: String?, 
+     selectionArgs: Array<String>?, sortOrder: String?) = dbHelper?.let { 
+     // 查询数据 
+     val db = it.readableDatabase 
+     val cursor = when (uriMatcher.match(uri)) { 
+     bookDir -> db.query("Book", projection, selection, selectionArgs, 
+     null, null, sortOrder) 
+     bookItem -> { 
+     val bookId = uri.pathSegments[1] 
+     db.query("Book", projection, "id = ?", arrayOf(bookId), null, null, 
+     sortOrder) 
+     } 
+     categoryDir -> db.query("Category", projection, selection, selectionArgs, 
+     null, null, sortOrder) 
+     categoryItem -> { 
+     val categoryId = uri.pathSegments[1] 
+     db.query("Category", projection, "id = ?", arrayOf(categoryId), 
+     null, null, sortOrder) 
+     } 
+     else -> null 
+     } 
+     cursor 
+     } 
+     
+     override fun insert(uri: Uri, values: ContentValues?) = dbHelper?.let { 
+     // 添加数据 
+     val db = it.writableDatabase 
+     val uriReturn = when (uriMatcher.match(uri)) { 
+     bookDir, bookItem -> { 
+     val newBookId = db.insert("Book", null, values) 
+     Uri.parse("content://$authority/book/$newBookId") 
+     } 
+     categoryDir, categoryItem -> { 
+     val newCategoryId = db.insert("Category", null, values) 
+     Uri.parse("content://$authority/category/$newCategoryId") 
+     } 
+     else -> null 
+     } 
+     uriReturn 
+     } 
+     
+     override fun update(uri: Uri, values: ContentValues?, selection: String?, 
+     selectionArgs: Array<String>?) = dbHelper?.let { 
+     // 更新数据 
+     val db = it.writableDatabase 
+     val updatedRows = when (uriMatcher.match(uri)) { 
+     bookDir -> db.update("Book", values, selection, selectionArgs) 
+     bookItem -> { 
+     val bookId = uri.pathSegments[1] 
+     db.update("Book", values, "id = ?", arrayOf(bookId)) 
+     } 
+     categoryDir -> db.update("Category", values, selection, selectionArgs) 
+     categoryItem -> { 
+     val categoryId = uri.pathSegments[1] 
+     db.update("Category", values, "id = ?", arrayOf(categoryId)) 
+     } 
+     else -> 0 
+     } 
+     updatedRows 
+     } ?: 0 
+     
+     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<String>?) 
+     = dbHelper?.let { 
+     // 删除数据  
+     val db = it.writableDatabase 
+     val deletedRows = when (uriMatcher.match(uri)) { 
+     bookDir -> db.delete("Book", selection, selectionArgs) 
+     bookItem -> { 
+     val bookId = uri.pathSegments[1] 
+     db.delete("Book", "id = ?", arrayOf(bookId)) 
+     } 
+     categoryDir -> db.delete("Category", selection, selectionArgs) 
+     categoryItem -> { 
+     val categoryId = uri.pathSegments[1] 
+     db.delete("Category", "id = ?", arrayOf(categoryId)) 
+     } 
+     else -> 0 
+     } 
+     deletedRows 
+     } ?: 0 
+     
+     override fun getType(uri: Uri) = when (uriMatcher.match(uri)) { 
+     bookDir -> "vnd.android.cursor.dir/vnd.com.example.databasetest.provider.book" 
+     bookItem -> "vnd.android.cursor.item/vnd.com.example.databasetest.provider.book" 
+     categoryDir -> "vnd.android.cursor.dir/vnd.com.example.databasetest. 
+     provider.category" 
+     categoryItem -> "vnd.android.cursor.item/vnd.com.example.databasetest. 
+     provider.category" 
+     else -> null 
+     } 
+    } 
+     —————————————————————————————————————————————————————————————————————————————
+    打开AndroidManifest.xml文件瞧一瞧，自动注册已经完成了
+
+### 2，
+    接着关闭DatabaseTest这个项目，并创建一个新项目ProviderTest，
+    我们将通过这个程序去访问DatabaseTest中的数 据。
+    还是先来编写一下布局文件吧，修改activity_main.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <Button 
+     android:id="@+id/addData" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Add To Book" /> 
+     
+     <Button 
+     android:id="@+id/queryData" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Query From Book" /> 
+     
+     <Button 
+     android:id="@+id/updateData" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Update Book" /> 
+     
+     <Button 
+     android:id="@+id/deleteData" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Delete From Book" /> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    后修改MainActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     var bookId: String? = null 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     addData.setOnClickListener { 
+     // 添加数据 
+     val uri = Uri.parse("content://com.example.databasetest.provider/book") 
+     val values = contentValuesOf("name" to "A Clash of Kings", 
+     "author" to "George Martin", "pages" to 1040, "price" to 22.85) 
+     val newUri = contentResolver.insert(uri, values) 
+     bookId = newUri?.pathSegments?.get(1) 
+     } 
+     queryData.setOnClickListener { 
+     // 查询数据 
+     val uri = Uri.parse("content://com.example.databasetest.provider/book")  
+     contentResolver.query(uri, null, null, null, null)?.apply { 
+     while (moveToNext()) { 
+     val name = getString(getColumnIndex("name")) 
+     val author = getString(getColumnIndex("author")) 
+     val pages = getInt(getColumnIndex("pages")) 
+     val price = getDouble(getColumnIndex("price")) 
+     Log.d("MainActivity", "book name is $name") 
+     Log.d("MainActivity", "book author is $author") 
+     Log.d("MainActivity", "book pages is $pages") 
+     Log.d("MainActivity", "book price is $price") 
+     } 
+     close() 
+     } 
+     } 
+     updateData.setOnClickListener { 
+     // 更新数据 
+     bookId?.let { 
+     val uri = Uri.parse("content://com.example.databasetest.provider/ 
+     book/$it") 
+     val values = contentValuesOf("name" to "A Storm of Swords", 
+     "pages" to 1216, "price" to 24.05) 
+     contentResolver.update(uri, values, null, null) 
+     } 
+     } 
+     deleteData.setOnClickListener { 
+     // 删除数据 
+     bookId?.let { 
+     val uri = Uri.parse("content://com.example.databasetest.provider/ 
+     book/$it") 
+     contentResolver.delete(uri, null, null) 
+     } 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+# 《七》运用手机多媒体
+
+## 一，创建通知渠道
+
+### 1，
+    首先需要一个NotiﬁcationManager对通知进行管理，可以通过调用Context的
+    getSystemService()方法获取。getSystemService()方法接收一个字符串参数用于确定
+    获取系统的哪个服务，这里我们传入Context.NOTIFICATION_SERVICE即可。因此，获取
+    NotiﬁcationManager的实例就可以写成：
+    —————————————————————————————————————————————————————————————————————————————
+    val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    接下来要使用NotificationChannel类构建一个通知渠道，并调用NotiﬁcationManager的
+    createNotificationChannel()方法完成创建。由于NotificationChannel类和
+    createNotificationChannel()方法都是Android 8.0系统中新增的API，因此我们在使用
+    的时候还需要进行版本判断才可以，写法如下：
+    —————————————————————————————————————————————————————————————————————————————
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { 
+     val channel = NotificationChannel(channelId, channelName, importance) 
+     manager.createNotificationChannel(channel) 
+    } 
+     —————————————————————————————————————————————————————————————————————————————
+
+## 二，通知的基本用法
+
+### 1，
+    首先需要使用一个Builder构造器来创建Notification对象，但问题在于，Android系统的每
+    一个版本都会对通知功能进行或多或少的修改，API不稳定的问题在通知上凸显得尤其严重，比
+    方说刚刚介绍的通知渠道功能在Android 8.0系统之前就是没有的。那么该如何解决这个问题
+    呢？其实解决方案我们之前已经见过好几回了，就是使用AndroidX库中提供的兼容API。
+    AndroidX库中提供了一个NotificationCompat类，使用这个类的构造器创建
+    Notification对象，就可以保证我们的程序在所有Android系统版本上都能正常工作了，代
+    码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    val notification = NotificationCompat.Builder(context, channelId).build()
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    我们可以在最终的build()方法之前连缀任意多的设置方法来创建一个丰富的Notification对象，
+    先来看一些最基本的设置：
+    —————————————————————————————————————————————————————————————————————————————
+    val notification = NotificationCompat.Builder(context, channelId) 
+     .setContentTitle("This is content title")  
+     .setContentText("This is content text") 
+     .setSmallIcon(R.drawable.small_icon) 
+     .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.large_icon)) 
+     .build() 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    以上工作都完成之后，只需要调用NotiﬁcationManager的notify()方法就可以让通知显示
+    出来了。notify()方法接收两个参数：第一个参数是id，要保证为每个通知指定的id都是不
+    同的；第二个参数则是Notification对象，这里直接将我们刚刚创建好的Notification对
+    象传入即可。因此，显示一个通知就可以写成：
+     —————————————————————————————————————————————————————————————————————————————
+    manager.notify(1, notification)
+    —————————————————————————————————————————————————————————————————————————————
+
+### 4，
+    新建一个NotiﬁcationTest项目，并修改activity_main.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent"> 
+     
+     <Button 
+     android:id="@+id/sendNotice" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:text="Send Notice" /> 
+     
+    </LinearLayout> 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 5，
+    接下来修改MainActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val manager = getSystemService(Context.NOTIFICATION_SERVICE) as 
+     NotificationManager 
+     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { 
+     val channel = NotificationChannel("normal", "Normal",NotificationManager. 
+     IMPORTANCE_DEFAULT) 
+     manager.createNotificationChannel(channel) 
+     } 
+     sendNotice.setOnClickListener { 
+     val notification = NotificationCompat.Builder(this, "normal") 
+     .setContentTitle("This is content title")  
+     .setContentText("This is content text") 
+     .setSmallIcon(R.drawable.small_icon) 
+     .setLargeIcon(BitmapFactory.decodeResource(resources, 
+     R.drawable.large_icon)) 
+     .build() 
+     manager.notify(1, notification) 
+     } 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+
+## 三，
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+
 ## 
 
 ### 
@@ -3567,7 +4303,11 @@
 
     —————————————————————————————————————————————————————————————————————————————
 
-## 
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
 
 ### 
     
@@ -3575,7 +4315,11 @@
 
     —————————————————————————————————————————————————————————————————————————————
 
-## 
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
 
 ### 
     
@@ -3583,29 +4327,12 @@
 
     —————————————————————————————————————————————————————————————————————————————
 
-## 
-
 ### 
     
     —————————————————————————————————————————————————————————————————————————————
 
     —————————————————————————————————————————————————————————————————————————————
 
-## 
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-## 
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
 
 ## 
 
@@ -3615,6 +4342,43 @@
 
     —————————————————————————————————————————————————————————————————————————————
 
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
+
+
 ## 
 
 ### 
@@ -3623,7 +4387,11 @@
 
     —————————————————————————————————————————————————————————————————————————————
 
-## 
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
 
 ### 
     
@@ -3631,7 +4399,11 @@
 
     —————————————————————————————————————————————————————————————————————————————
 
-## 
+### 
+    
+    —————————————————————————————————————————————————————————————————————————————
+
+    —————————————————————————————————————————————————————————————————————————————
 
 ### 
     
@@ -3639,11 +4411,10 @@
 
     —————————————————————————————————————————————————————————————————————————————
 
-## 
-
 ### 
     
     —————————————————————————————————————————————————————————————————————————————
 
     —————————————————————————————————————————————————————————————————————————————
+
 
