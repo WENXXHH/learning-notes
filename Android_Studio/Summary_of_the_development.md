@@ -3561,7 +3561,7 @@
 
 ## 一，在程序运行时申请权限
 
-### 1，
+### 1，编辑按钮
     首先新建一个RuntimePermissionTest项目
     使用CALL_PHONE这个权限来作为本小节的示例
     修改activity_main.xml布局文件
@@ -3579,7 +3579,7 @@
     </LinearLayout> 
      —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，编辑点击事件
     接着修改MainActivity中的代码
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() { 
@@ -3588,6 +3588,7 @@
      super.onCreate(savedInstanceState) 
      setContentView(R.layout.activity_main) 
      makeCall.setOnClickListener { 
+     //异常处理
      try { 
      val intent = Intent(Intent.ACTION_CALL) 
      intent.data = Uri.parse("tel:10086") 
@@ -3601,7 +3602,7 @@
     } 
     —————————————————————————————————————————————————————————————————————————————
 
-### 3，
+### 3，声明权限
     接下来修改AndroidManifest.xml文件，在其中声明如下权限：
     —————————————————————————————————————————————————————————————————————————————
     <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -3622,7 +3623,7 @@
     </manifest> 
     —————————————————————————————————————————————————————————————————————————————
 
-### 4，
+### 4，修改后的编辑逻辑
     使用危险权限时必须进行运行时权限处理。
     那么下面我们就来尝试修复这个问题，修改MainActivity中的代码，
     —————————————————————————————————————————————————————————————————————————————
@@ -3634,9 +3635,11 @@
      makeCall.setOnClickListener { 
      if (ContextCompat.checkSelfPermission(this, 
      Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) { 
+     //检查是否授权
      ActivityCompat.requestPermissions(this, 
      arrayOf(Manifest.permission.CALL_PHONE), 1) 
      } else { 
+     //如果授权了就直接拨号
      call() 
      } 
      } 
@@ -3646,10 +3649,10 @@
      permissions: Array<String>, grantResults: IntArray) { 
      super.onRequestPermissionsResult(requestCode, permissions, grantResults) 
      when (requestCode) { 
-     1 -> { 
+     1 -> { // 对应上面 requestPermissions 的 requestCode=1
      if (grantResults.isNotEmpty() && 
      grantResults[0] == PackageManager.PERMISSION_GRANTED) { 
-     call() 
+     call() // 权限同意 → 拨号
      } else { 
      Toast.makeText(this, "You denied the permission", 
      Toast.LENGTH_SHORT).show() 
@@ -3660,20 +3663,21 @@
      
      private fun call() { 
      try { 
-     val intent = Intent(Intent.ACTION_CALL) 
-     intent.data = Uri.parse("tel:10086") 
-     startActivity(intent) 
+     val intent = Intent(Intent.ACTION_CALL) // 指定“直接拨号”动作
+     intent.data = Uri.parse("tel:10086") // 设置电话号码
+     startActivity(intent) // 启动拨号
      } catch (e: SecurityException) { 
-     e.printStackTrace() 
+     e.printStackTrace() // 本应不会触发（权限已检查）
      } 
      } 
      
     } 
      —————————————————————————————————————————————————————————————————————————————
+    用户点击后，先检查“能否拨打电话”的权限，如果没权限就申请权限，申请成功后直接拨号（例如拨打10086）
 
 ## 二， ContentProvider读取系统联系人
-
-### 1，
+    省略了ContentResolver的基本用法
+### 1，添加ListView布局
     打开通讯录程序通过点击“Create new contact”创建联系人。
     这里就先创建两个联系人吧，分别填入他们的姓名和手机号。
     现在新建一个ContactsTest项目
@@ -3694,7 +3698,7 @@
     </LinearLayout> 
     —————————————————————————————————————————————————————————————————————————————
 
-### 2，
+### 2，编辑读取逻辑
     接着修改MainActivity中的代码，如下所示：
     —————————————————————————————————————————————————————————————————————————————
     class MainActivity : AppCompatActivity() {
@@ -3705,13 +3709,13 @@
      super.onCreate(savedInstanceState) 
      setContentView(R.layout.activity_main) 
      adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, contactsList) 
-     contactsView.adapter = adapter 
+     contactsView.adapter = adapter  // 创建一个空列表 contactsList，将列表绑定到UI
      if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) 
      != PackageManager.PERMISSION_GRANTED) { 
      ActivityCompat.requestPermissions(this, 
      arrayOf(Manifest.permission.READ_CONTACTS), 1) 
      } else { 
-     readContacts() 
+     readContacts()  // 权限已有 → 直接读取联系人
      } 
      } 
      
@@ -3722,7 +3726,7 @@
      1 -> { 
      if (grantResults.isNotEmpty() 
      && grantResults[0] == PackageManager.PERMISSION_GRANTED) { 
-     readContacts() 
+     readContacts()  // 用户同意 → 读取联系人
      } else { 
      Toast.makeText(this, "You denied the permission", 
      Toast.LENGTH_SHORT).show() 
@@ -3733,25 +3737,27 @@
      
      private fun readContacts() { 
      // 查询联系人数据 
-     contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, 
+     contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, // 1. 指定数据来源
      null, null, null, null)?.apply { 
      while (moveToNext()) { 
-     // 获取联系人姓名 
+     // 2. 遍历每条联系人 
      val displayName = getString(getColumnIndex( 
      ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)) 
      // 获取联系人手机号 
      val number = getString(getColumnIndex( 
      ContactsContract.CommonDataKinds.Phone.NUMBER)) 
-     contactsList.add("$displayName\n$number") 
+     contactsList.add("$displayName\n$number") // 3. 保存数据
      } 
-     adapter.notifyDataSetChanged() 
-     close() 
+     adapter.notifyDataSetChanged()  // 4. 刷新列表
+     close()  // 5. 关闭资源
      } 
      } 
     } 
     —————————————————————————————————————————————————————————————————————————————
+    这个代码实现了一个“联系人列表展示”功能：先检查“读取联系人”权限，
+    授权后从系统联系人数据库读取所有联系人（姓名+号码），并显示在列表中。
 
-### 3，
+### 3，声明权限
     修改AndroidManifest.xml中的代码
     —————————————————————————————————————————————————————————————————————————————
     <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
@@ -4255,7 +4261,6 @@
 
     —————————————————————————————————————————————————————————————————————————————
 
-
 ## 三，
 
 ### 
@@ -4294,7 +4299,6 @@
 
     —————————————————————————————————————————————————————————————————————————————
 
-
 ## 
 
 ### 
@@ -4417,4 +4421,32 @@
 
     —————————————————————————————————————————————————————————————————————————————
 
+# 《八》探究service
 
+##
+
+###
+
+# 《九》使用网络技术
+
+##
+
+###
+
+# 《十》Material Design实战
+
+##
+
+###
+
+# 《十一》探究Jetpack
+
+##
+
+###
+
+# 《十二》进阶高级技巧
+
+##
+
+###
