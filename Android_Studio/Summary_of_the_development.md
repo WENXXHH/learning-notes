@@ -3675,7 +3675,7 @@
      —————————————————————————————————————————————————————————————————————————————
     用户点击后，先检查“能否拨打电话”的权限，如果没权限就申请权限，申请成功后直接拨号（例如拨打10086）
 
-## 二， ContentProvider读取系统联系人
+## 二， 读取系统联系人
     省略了ContentResolver的基本用法
 ### 1，添加ListView布局
     打开通讯录程序通过点击“Create new contact”创建联系人。
@@ -3770,125 +3770,239 @@
 
 ## 三，创建ContentProvider的步骤
 
-### 1，
-    想要实现跨程序共享数据的功能，可以通过新建一个类去继承ContentProvider的方式来实现。
-    ContentProvider类中有6个抽象方法，我们在使用子类继承它的时候，
-    需要将这6个方法全部重写。观察下面的代码示例：
+### 1，创建数据库类（SQLiteOpenHelper）
+    这里只是举了一个简单的创建例子方便后续操作
     —————————————————————————————————————————————————————————————————————————————
-    class MyProvider : ContentProvider() { 
-     
-     override fun onCreate(): Boolean { 
-     return false 
-     } 
-     
-     override fun query(uri: Uri, projection: Array<String>?, selection: String?, 
-     selectionArgs: Array<String>?, sortOrder: String?): Cursor? { 
-     return null 
-     } 
-     
-     override fun insert(uri: Uri, values: ContentValues?): Uri? { 
-     return null 
-     } 
-     
-     override fun update(uri: Uri, values: ContentValues?, selection: String?, 
-     selectionArgs: Array<String>?): Int { 
-     return 0 
-     } 
-     
-     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<String>?): Int { 
-     return 0 
-     } 
-     
-     override fun getType(uri: Uri): String? { 
-     return null 
-     } 
-     
-    } 
-    —————————————————————————————————————————————————————————————————————————————
-
-### 2，
-
-    回顾一下，一个标准的内容URI写法是：
-    content://com.example.app.provider/table1 
-    这就表示调用方期望访问的是com.example.app这个应用的table1表中的数据。
-
-    除此之外，我们还可以在这个内容URI的后面加上一个id，例如：
-    content://com.example.app.provider/table1/1 
-
-    所以，一个能够匹配任意表的内容URI格式就可以写成：
-    content://com.example.app.provider/* 
-
-    一个能够匹配table1表中任意一行数据的内容URI格式就可以写成：
-    content://com.example.app.provider/table1/# 
-
-### 3，
-    修改MyProvider中的代码，如下所示：
-    —————————————————————————————————————————————————————————————————————————————
-    class MyProvider : ContentProvider() { 
-     
-     private val table1Dir = 0 
-     private val table1Item = 1 
-     private val table2Dir = 2 
-     private val table2Item = 3 
-     
-     private val uriMatcher = UriMatcher(UriMatcher.NO_MATCH) 
-     
-     init { 
-     uriMatcher.addURI("com.example.app.provider", "table1", table1Dir) 
-     uriMatcher.addURI("com.example.app.provider ", "table1/#", table1Item) 
-     uriMatcher.addURI("com.example.app.provider ", "table2", table2Dir) 
-     uriMatcher.addURI("com.example.app.provider ", "table2/#", table2Item) 
-     } 
-     ... 
-     override fun query(uri: Uri, projection: Array<String>?, selection: String?, 
-     selectionArgs: Array<String>?, sortOrder: String?): Cursor? { 
-     when (uriMatcher.match(uri)) { 
-     table1Dir -> { 
-     // 查询table1表中的所有数据 
-     } 
-     table1Item -> { 
-     // 查询table1表中的单条数据 
-     } 
-     table2Dir -> { 
-     // 查询table2表中的所有数据 
-     } 
-     table2Item -> { 
-     // 查询table2表中的单条数据 
-     } 
-     } 
-     ... 
-     } 
-     ... 
-    } 
-     —————————————————————————————————————————————————————————————————————————————
-
-### 4，
+    import android.content.Context
+    import android.database.sqlite.SQLiteDatabase
+    import android.database.sqlite.SQLiteOpenHelper
     
-    所以，对于content://com.example.app.provider/table1这个内容URI，它所对应的MIME类
-    型就可以写成：
-    vnd.android.cursor.dir/vnd.com.example.app.provider.table1 
+    class MyDatabaseHelper(context: Context) : SQLiteOpenHelper(
+        context,
+        DATABASE_NAME,
+        null,
+        DATABASE_VERSION
+    ) {
+        companion object {
+            private const val DATABASE_NAME = "mydatabase.db"
+            private const val DATABASE_VERSION = 1
+        }
+    
+        override fun onCreate(db: SQLiteDatabase) {
+            // 创建表
+            db.execSQL("CREATE TABLE table1 (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, age INTEGER)")
+            db.execSQL("CREATE TABLE table2 (_id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, phone TEXT)")
+        }
+    
+        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+            // 升级数据库
+            db.execSQL("DROP TABLE IF EXISTS table1")
+            db.execSQL("DROP TABLE IF EXISTS table2")
+            onCreate(db)
+        }
+    }
+    —————————————————————————————————————————————————————————————————————————————
 
-    对于content://com.example.app.provider/table1/1这个内容URI，它所对应的MIME类型就
-    可以写成：
-    vnd.android.cursor.item/vnd.com.example.app.provider.table1 
+### 2，创建ContentProvider类
+    —————————————————————————————————————————————————————————————————————————————
+    import android.content.ContentProvider
+    import android.content.ContentUris
+    import android.content.ContentValues
+    import android.content.UriMatcher
+    import android.database.Cursor
+    import android.database.sqlite.SQLiteDatabase
+    import android.net.Uri
+    import android.provider.BaseColumns
+    
+    class MyProvider : ContentProvider() {
+    
+        //初始化常量
+        companion object {
+            const val AUTHORITY = "com.example.app.provider"
+            const val TABLE1 = "table1"
+            const val TABLE2 = "table2"
+    
+            // 常量：匹配URI的类型
+            private const val TABLE1_DIR = 1
+            private const val TABLE1_ITEM = 2
+            private const val TABLE2_DIR = 3
+            private const val TABLE2_ITEM = 4
+    
+            // 初始化UriMatcher
+            private val URI_MATCHER = UriMatcher(UriMatcher.NO_MATCH).apply {
+                addURI(AUTHORITY, TABLE1, TABLE1_DIR)
+                addURI(AUTHORITY, "$TABLE1/#", TABLE1_ITEM)
+                addURI(AUTHORITY, TABLE2, TABLE2_DIR)
+                addURI(AUTHORITY, "$TABLE2/#", TABLE2_ITEM)
+            }
+        }
+    
+        private lateinit var dbHelper: MyDatabaseHelper
+    
+        //引入创建的数据库
+        override fun onCreate(): Boolean {
+            dbHelper = MyDatabaseHelper(context!!)
+            return true
+        }
+    
+        //数据身份说明
+        override fun getType(uri: Uri): String? = when (URI_MATCHER.match(uri)) {
+            TABLE1_DIR -> "vnd.android.cursor.dir/vnd.com.example.app.provider.table1"
+            TABLE1_ITEM -> "vnd.android.cursor.item/vnd.com.example.app.provider.table1"
+            TABLE2_DIR -> "vnd.android.cursor.dir/vnd.com.example.app.provider.table2"
+            TABLE2_ITEM -> "vnd.android.cursor.item/vnd.com.example.app.provider.table2"
+            else -> null
+        }
 
-### 5，
-    现在我们可以继续完善MyProvider中的内容了，这次来实现getType()方法中的逻辑
+        override fun query(
+            uri: Uri,
+            projection: Array<String>?,
+            selection: String?,
+            selectionArgs: Array<String>?,
+            sortOrder: String?
+        ): Cursor? {
+            val builder = SQLiteQueryBuilder().apply {
+                when (URI_MATCHER.match(uri)) {
+                    TABLE1_DIR -> setTables(TABLE1)
+                    TABLE1_ITEM -> {
+                        setTables(TABLE1)
+                        appendWhere("_id=${uri.lastPathSegment}")
+                    }
+                    TABLE2_DIR -> setTables(TABLE2)
+                    TABLE2_ITEM -> {
+                        setTables(TABLE2)
+                        appendWhere("_id=${uri.lastPathSegment}")
+                    }
+                    else -> throw IllegalArgumentException("Unknown URI: $uri")
+                }
+            }
+    
+            val db = dbHelper.readableDatabase
+            val cursor = builder.query(
+                db,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+            )
+            cursor.setNotificationUri(context?.contentResolver, uri)
+            return cursor
+        }
+
+        override fun insert(uri: Uri, values: ContentValues?): Uri? {
+            val db = dbHelper.writableDatabase
+            val id = when (URI_MATCHER.match(uri)) {
+                TABLE1_DIR -> db.insert(TABLE1, null, values)
+                TABLE2_DIR -> db.insert(TABLE2, null, values)
+                else -> throw IllegalArgumentException("Unknown URI: $uri")
+            }
+    
+            context?.contentResolver?.notifyChange(uri, null)
+            return ContentUris.withAppendedId(uri, id)
+        }
+    
+        override fun update(
+            uri: Uri,
+            values: ContentValues?,
+            selection: String?,
+            selectionArgs: Array<String>?
+        ): Int {
+            val db = dbHelper.writableDatabase
+            val count = when (URI_MATCHER.match(uri)) {
+                TABLE1_DIR -> db.update(TABLE1, values, selection, selectionArgs)
+                TABLE1_ITEM -> {
+                    val id = uri.lastPathSegment
+                    db.update(TABLE1, values, "_id=$id", selectionArgs)
+                }
+                TABLE2_DIR -> db.update(TABLE2, values, selection, selectionArgs)
+                TABLE2_ITEM -> {
+                    val id = uri.lastPathSegment
+                    db.update(TABLE2, values, "_id=$id", selectionArgs)
+                }
+                else -> throw IllegalArgumentException("Unknown URI: $uri")
+            }
+    
+            context?.contentResolver?.notifyChange(uri, null)
+            return count
+        }
+    
+        override fun delete(
+            uri: Uri,
+            selection: String?,
+            selectionArgs: Array<String>?
+        ): Int {
+            val db = dbHelper.writableDatabase
+            val count = when (URI_MATCHER.match(uri)) {
+                TABLE1_DIR -> db.delete(TABLE1, selection, selectionArgs)
+                TABLE1_ITEM -> {
+                    val id = uri.lastPathSegment
+                    db.delete(TABLE1, "_id=$id", selectionArgs)
+                }
+                TABLE2_DIR -> db.delete(TABLE2, selection, selectionArgs)
+                TABLE2_ITEM -> {
+                    val id = uri.lastPathSegment
+                    db.delete(TABLE2, "_id=$id", selectionArgs)
+                }
+                else -> throw IllegalArgumentException("Unknown URI: $uri")
+            }
+    
+            context?.contentResolver?.notifyChange(uri, null)
+            return count
+        }
+    }
+    —————————————————————————————————————————————————————————————————————————————、
+    实现逻辑：
+    1️⃣ 常量定义（伴生对象）✅ 作用：建立URI匹配规则，告诉系统"这个地址对应什么操作"
+    2️⃣ onCreate方法✅ 作用：初始化数据库帮助类（只执行一次）
+    3️⃣ getType方法✅ 作用：告诉调用方返回的是"一筐水果"（多条）还是"一个苹果"（单条）
+    4️⃣ query方法（核心）✅ 关键点：操作的是"表"，不是"字段"，无论数据库多大，逻辑不变
+    5️⃣ insert/update/delete方法✅ 关键点：根据URI匹配规则，操作对应表
+    6️⃣ AndroidManifest.xml注册✅ 关键点：android:exported="true"必须设置，否则其他应用无法访问
+
+### 3，在AndroidManifest.xml中注册
     ————————————————————————————————————————————————————————————————————————————
-    class MyProvider : ContentProvider() { 
-     ... 
-     override fun getType(uri: Uri) = when (uriMatcher.match(uri)) { 
-     table1Dir -> "vnd.android.cursor.dir/vnd.com.example.app.provider.table1" 
-     table1Item -> "vnd.android.cursor.item/vnd.com.example.app.provider.table1" 
-     table2Dir -> "vnd.android.cursor.dir/vnd.com.example.app.provider.table2" 
-     table2Item -> "vnd.android.cursor.item/vnd.com.example.app.provider.table2" 
-     else -> null 
-     } 
-    } 
+    <application ...>
+        ...
+        <provider
+            android:name=".MyProvider"
+            android:authorities="com.example.app.provider"
+            android:exported="true" />
+    </application>
+    —————————————————————————————————————————————————————————————————————————————
+
+### 4,使用示例
+    —————————————————————————————————————————————————————————————————————————————
+    // 添加数据
+    val values = ContentValues().apply {
+        put("name", "张三")
+        put("age", 25)
+    }
+    val newUri = contentResolver.insert(
+        Uri.parse("content://com.example.app.provider/table1"),
+        values
+    )
+    
+    // 查询数据
+    val cursor = contentResolver.query(
+        Uri.parse("content://com.example.app.provider/table1"),
+        null,
+        null,
+        null,
+        null
+    )
+    
+    // 删除数据
+    val deletedCount = contentResolver.delete(
+        Uri.parse("content://com.example.app.provider/table1/1"),
+        null,
+        null
+    )
     —————————————————————————————————————————————————————————————————————————————
 
 ## 四，实现跨程序数据共享
-
+    待实践使用
 ### 1，
     在上一章中DatabaseTest项目的基础上继续开发，通过ContentProvider
     来给它加入外部访问接口。打开DatabaseTest项目，首先将MyDatabaseHelper中使用Toast
@@ -4219,207 +4333,498 @@
     }
     —————————————————————————————————————————————————————————————————————————————
 
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-## 三，
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-## 
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-
-## 
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-
-## 
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
-
-### 
-    
-    —————————————————————————————————————————————————————————————————————————————
-
-    —————————————————————————————————————————————————————————————————————————————
+### 6，
+    现在我们来优化一下NotiﬁcationTest项目
+    首先需要准备好另一个Activity，右击com.example.notiﬁcationtest包
+    →New→Activity→Empty Activity，新建NotiﬁcationActivity。然后修改
+    activity_notiﬁcation.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <TextView 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_centerInParent="true" 
+     android:textSize="24sp" 
+     android:text="This is notification layout" 
+     /> 
+     
+    </RelativeLayout> 
+     —————————————————————————————————————————————————————————————————————————————
+
+### 7，
+    下面我们修改MainActivity中的代码
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     ... 
+     sendNotice.setOnClickListener { 
+     val intent = Intent(this, NotificationActivity::class.java) 
+     val pi = PendingIntent.getActivity(this, 0, intent, 0) 
+     val notification = NotificationCompat.Builder(this, "normal") 
+     .setContentTitle("This is content title") 
+     .setContentText("This is content text") 
+     .setSmallIcon(R.drawable.small_icon) 
+     .setLargeIcon(BitmapFactory.decodeResource(resources, 
+     R.drawable.large_icon)) 
+     .setContentIntent(pi) 
+     .build() 
+     manager.notify(1, notification) 
+     } 
+     } 
+     
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 8，
+    系统状态上的通知图标消失的方法
+    方法一，
+    —————————————————————————————————————————————————————————————————————————————
+    val notification = NotificationCompat.Builder(this, "normal") 
+     ... 
+     .setAutoCancel(true) 
+     .build()
+    —————————————————————————————————————————————————————————————————————————————
+
+### 9，
+    方法二，
+    —————————————————————————————————————————————————————————————————————————————
+    class NotificationActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_notification) 
+     val manager = getSystemService(Context.NOTIFICATION_SERVICE) as 
+     NotificationManager 
+     manager.cancel(1) 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+ ## 三，通知的进阶技巧
+
+### 1，
+    在开始使用setStyle()方法之前，我们先来做一个试验吧，之前的通知内容都比较短，如果
+    设置成很长的文字会是什么效果呢？比如这样写：
+    —————————————————————————————————————————————————————————————————————————————
+    val notification = NotificationCompat.Builder(this, "normal") 
+     ... 
+     .setContentText("Learn how to build notifications, send and sync data, 
+     and use voice actions.Get the official Android IDE and developer tools to 
+     build apps for Android.") 
+     ... 
+     .build() 
+     —————————————————————————————————————————————————————————————————————————————
+
+### 2.
+    但是如果你真的非常需要在通知当中显示一段长文字，Android也是支持的，通过setStyle()
+    方法就可以做到，具体写法如下：
+    —————————————————————————————————————————————————————————————————————————————
+    val notification = NotificationCompat.Builder(this, "normal") 
+     ... 
+     .setStyle(NotificationCompat.BigTextStyle().bigText("Learn how to build 
+     notifications, send and sync data, and use voice actions. Get the official 
+     Android IDE and developer tools to build apps for Android.")) 
+     .build() 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    除了显示长文字之外，通知里还可以显示一张大图片，具体用法是基本相似的：
+    —————————————————————————————————————————————————————————————————————————————
+    val notification = NotificationCompat.Builder(this, "normal") 
+     ... 
+     .setStyle(NotificationCompat.BigPictureStyle().bigPicture( 
+     BitmapFactory.decodeResource(resources, R.drawable.big_image))) 
+     .build() 
+    —————————————————————————————————————————————————————————————————————————————
+
+### 4，
+    修改MainActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     ... 
+     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { 
+     ... 
+     val channel2 = NotificationChannel("important", "Important", 
+     NotificationManager.IMPORTANCE_HIGH) 
+     manager.createNotificationChannel(channel2) 
+     } 
+     sendNotice.setOnClickListener { 
+     val intent = Intent(this, NotificationActivity::class.java) 
+     val pi = PendingIntent.getActivity(this, 0, intent, 0) 
+     val notification = NotificationCompat.Builder(this, "important") 
+     ... 
+     } 
+     } 
+     
+    } 
+     —————————————————————————————————————————————————————————————————————————————
+
+## 四，调用摄像头拍照
+
+### 1，
+    新建一个CameraAlbumTest项目，然后修改activity_main.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <Button 
+     android:id="@+id/takePhotoBtn" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Take Photo" /> 
+     
+     <ImageView 
+     android:id="@+id/imageView" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center_horizontal" /> 
+     
+    </LinearLayout>
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    然后开始编写调用摄像头的具体逻辑，修改MainActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     val takePhoto = 1 
+     lateinit var imageUri: Uri 
+     lateinit var outputImage: File 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     takePhotoBtn.setOnClickListener { 
+     // 创建File对象，用于存储拍照后的图片 
+     outputImage = File(externalCacheDir, "output_image.jpg") 
+     if (outputImage.exists()) { 
+     outputImage.delete() 
+     } 
+     outputImage.createNewFile() 
+     imageUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) { www.blogss.cn
+     FileProvider.getUriForFile(this, "com.example.cameraalbumtest. 
+     fileprovider", outputImage) 
+     } else { 
+     Uri.fromFile(outputImage) 
+     } 
+     // 启动相机程序 
+     val intent = Intent("android.media.action.IMAGE_CAPTURE") 
+     intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri) 
+     startActivityForResult(intent, takePhoto) 
+     } 
+     } 
+     
+     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) { 
+     super.onActivityResult(requestCode, resultCode, data) 
+     when (requestCode) { 
+     takePhoto -> { 
+     if (resultCode == Activity.RESULT_OK) { 
+     // 将拍摄的照片显示出来 
+     val bitmap = BitmapFactory.decodeStream(contentResolver. 
+     openInputStream(imageUri)) 
+     imageView.setImageBitmap(rotateIfRequired(bitmap)) 
+     } 
+     } 
+     } 
+     } 
+     
+     private fun rotateIfRequired(bitmap: Bitmap): Bitmap { 
+     val exif = ExifInterface(outputImage.path) 
+     val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 
+     ExifInterface.ORIENTATION_NORMAL) 
+     return when (orientation) { 
+     ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90) 
+     ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180) 
+     ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270) 
+     else -> bitmap 
+     } 
+     } 
+     
+     private fun rotateBitmap(bitmap: Bitmap, degree: Int): Bitmap { 
+     val matrix = Matrix() 
+     matrix.postRotate(degree.toFloat()) 
+     val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, 
+     matrix, true) 
+     bitmap.recycle() // 将不再需要的Bitmap对象回收 
+     return rotatedBitmap 
+     } 
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 3，
+    那么我们自然要在AndroidManifest.xml中对它进行注册才行，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android" 
+     package="com.example.cameraalbumtest"> 
+     <application 
+     android:allowBackup="true" 
+     android:icon="@mipmap/ic_launcher" 
+     android:label="@string/app_name" 
+     android:supportsRtl="true" 
+     android:theme="@style/AppTheme"> 
+     ... 
+     <provider 
+     android:name="androidx.core.content.FileProvider" 
+     android:authorities="com.example.cameraalbumtest.fileprovider" 
+     android:exported="false" 
+     android:grantUriPermissions="true"> 
+     <meta-data 
+     android:name="android.support.FILE_PROVIDER_PATHS" 
+     android:resource="@xml/file_paths" /> 
+     </provider> www.blogss.cn
+     </application> 
+    </manifest>
+    —————————————————————————————————————————————————————————————————————————————
+
+### 4，
+    右击res目录→New→Directory，创建一个xml目录，接着右击xml目录→New→File，创建一
+    个ﬁle_paths.xml文件。然后修改ﬁle_paths.xml文件中的内容，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <?xml version="1.0" encoding="utf-8"?> 
+    <paths xmlns:android="http://schemas.android.com/apk/res/android"> 
+     <external-path name="my_images" path="/" /> 
+    </paths> 
+     —————————————————————————————————————————————————————————————————————————————
+
+## 五，从相册中选择图片
+
+### 1，
+    还是在CameraAlbumTest项目的基础上进行修改，编辑activity_main.xml文件，在布局中
+    添加一个按钮，用于从相册中选择图片，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     www.blogss.cn
+     <Button 
+     android:id="@+id/takePhotoBtn" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Take Photo" /> 
+     
+     <Button 
+     android:id="@+id/fromAlbumBtn" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="From Album" /> 
+     
+     <ImageView 
+     android:id="@+id/imageView" 
+     android:layout_width="wrap_content" 
+     android:layout_height="wrap_content" 
+     android:layout_gravity="center_horizontal" /> 
+     
+    </LinearLayout> 
+     —————————————————————————————————————————————————————————————————————————————
+
+### 2，
+    然后修改MainActivity中的代码，加入从相册选择图片的逻辑，代码如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     ... 
+     val fromAlbum = 2 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     ... 
+     fromAlbumBtn.setOnClickListener { 
+     // 打开文件选择器 
+     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT) 
+     intent.addCategory(Intent.CATEGORY_OPENABLE) 
+     // 指定只显示图片 
+     intent.type = "image/*" 
+     startActivityForResult(intent, fromAlbum) 
+     } 
+     } 
+     
+     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) { 
+     super.onActivityResult(requestCode, resultCode, data) 
+     when (requestCode) { 
+     ... 
+     fromAlbum -> { 
+     if (resultCode == Activity.RESULT_OK && data != null) { 
+     data.data?.let { uri -> 
+     // 将选择的图片显示 
+     val bitmap = getBitmapFromUri(uri) 
+     imageView.setImageBitmap(bitmap) 
+     } 
+     } 
+     } 
+     } 
+     } 
+     
+     private fun getBitmapFromUri(uri: Uri) = contentResolver 
+     .openFileDescriptor(uri, "r")?.use { 
+     BitmapFactory.decodeFileDescriptor(it.fileDescriptor) 
+     } 
+     ... 
+    } 
+    —————————————————————————————————————————————————————————————————————————————
+
+## 六，播放多媒体文件
+
+### 1，播放音频
+    新建一个PlayAudioTest项目，然后修改activity_main.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <Button 
+     android:id="@+id/play" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Play" /> 
+     
+     <Button 
+     android:id="@+id/pause" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Pause" /> 
+     
+     <Button 
+     android:id="@+id/stop" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" 
+     android:text="Stop" /> 
+     
+    </LinearLayout> 
+     —————————————————————————————————————————————————————————————————————————————
+
+    然后修改MainActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     private val mediaPlayer = MediaPlayer() 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     initMediaPlayer() 
+     play.setOnClickListener { 
+     if (!mediaPlayer.isPlaying) { 
+     mediaPlayer.start() // 开始播放 
+     } 
+     } 
+     pause.setOnClickListener { 
+     if (mediaPlayer.isPlaying) { 
+     mediaPlayer.pause() // 暂停播放 
+     } 
+     } 
+     stop.setOnClickListener { 
+     if (mediaPlayer.isPlaying) { 
+     mediaPlayer.reset() // 停止播放 
+     initMediaPlayer() 
+     } 
+     } 
+     } 
+     
+     private fun initMediaPlayer() { 
+     val assetManager = assets 
+     val fd = assetManager.openFd("music.mp3") 
+     mediaPlayer.setDataSource(fd.fileDescriptor, fd.startOffset, fd.length) 
+     mediaPlayer.prepare() 
+     } 
+     
+     override fun onDestroy() { 
+     super.onDestroy() 
+     mediaPlayer.stop() 
+     mediaPlayer.release() 
+     } 
+     
+    }
+    —————————————————————————————————————————————————————————————————————————————
+
+### 2，播放视频
+    新建PlayVideoTest项目，然后修改activity_main.xml中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+     android:orientation="vertical" 
+     android:layout_width="match_parent" 
+     android:layout_height="match_parent" > 
+     
+     <LinearLayout 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" > 
+     
+     <Button 
+     android:id="@+id/play" 
+     android:layout_width="0dp" 
+     android:layout_height="wrap_content" 
+     android:layout_weight="1" 
+     android:text="Play" /> 
+     
+     <Button 
+     android:id="@+id/pause" 
+     android:layout_width="0dp" 
+     android:layout_height="wrap_content" 
+     android:layout_weight="1" 
+     android:text="Pause" /> 
+     
+     <Button 
+     android:id="@+id/replay" 
+     android:layout_width="0dp" 
+     android:layout_height="wrap_content" 
+     android:layout_weight="1" 
+     android:text="Replay" /> 
+     www.blogss.cn
+     </LinearLayout> 
+     
+     <VideoView 
+     android:id="@+id/videoView" 
+     android:layout_width="match_parent" 
+     android:layout_height="wrap_content" /> 
+     
+    </LinearLayout> 
+     —————————————————————————————————————————————————————————————————————————————
+
+    现在右击app/src/main/res→New→Directory，在弹出的对话框中输入“raw”，完成raw目录
+    的创建，并把要播放的视频资源放在里面。这里我提前准备了一个video.mp4资源（资源下载
+    方式见前言），如图9.20所示，你也可以使用自己准备的视频资源。
+
+    然后修改MainActivity中的代码，如下所示：
+    —————————————————————————————————————————————————————————————————————————————
+    class MainActivity : AppCompatActivity() { 
+     
+     override fun onCreate(savedInstanceState: Bundle?) { 
+     super.onCreate(savedInstanceState) 
+     setContentView(R.layout.activity_main) 
+     val uri = Uri.parse("android.resource://$packageName/${R.raw.video}") 
+     videoView.setVideoURI(uri) 
+     play.setOnClickListener { 
+     if (!videoView.isPlaying) { www.blogss.cn
+     videoView.start() // 开始播放 
+     } 
+     } 
+     pause.setOnClickListener { 
+     if (videoView.isPlaying) { 
+     videoView.pause() // 暂停播放 
+     } 
+     } 
+     replay.setOnClickListener { 
+     if (videoView.isPlaying) { 
+     videoView.resume() // 重新播放 
+     } 
+     } 
+     } 
+     
+     override fun onDestroy() { 
+     super.onDestroy() 
+     videoView.suspend() 
+     } 
+     
+    } 
+     —————————————————————————————————————————————————————————————————————————————
 
 # 《八》探究service
 
