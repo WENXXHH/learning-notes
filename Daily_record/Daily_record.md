@@ -71,3 +71,12 @@
 
 # 2026.4.3-4.10
     进行sunnyweather应用代码复刻顺便学习新知识
+
+# 2026.4.11
+    3.10-4.11这一个月的安卓原生开发学习总结：
+    这段时间，我系统推进了 Android 应用开发的基础能力建设。跟着《第一行代码》学习了Activity，
+    BroadcastReciver,ContentProvider,Service等主要组件，掌握使用常见的UI界面设计和常见
+    控件，学习使用fragment，SQlite数据库等数据持久化技术，Jetpack的一些常见组件，最近在尝试
+    复刻《第一行代码》书上的SunntyWeatherAPP代码，练习同时接触Retrofit网络请求、JSON 解析、
+    Service 后台服务等技术。
+    
